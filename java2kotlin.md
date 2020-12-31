@@ -9,12 +9,19 @@
 
 - 类的继承和实现，
     - 使用`:`来取代`extends`和`implements`，如
-    `class MainActivity extends BaseActivity implements View.OnClickListener`
+    ```
+    class MainActivity extends BaseActivity implements View.OnClickListener
+    ```
     变成了
-    `class MainActivity : BaseActivity() , View.OnClickListener`, class继承需要显示声明构造，对于BaseActivity，即`()`，接口则不需要
+    ```
+    class MainActivity : BaseActivity() , View.OnClickListener
+    ```
+     class继承需要显示声明构造，对于BaseActivity，即`()`，接口则不需要
 
 - 默认可见性
-    - koltin的类如无声明，则是public final的，方法如无声明也是public final的，变量如无声明则是public的，但编译后时privite并会自动生成相应get和set方法，对变量声明的可见性会影响其get/set的可见性
+    - koltin的类如无声明，则是public final的    
+    方法如无声明也是public final的  
+    变量如无声明则是public的
     - kotlin写在其它类内部的类并非内部类，不会持有外部类的默认引用，要成为内部类，需要给写在内部的类使用`inner`关键字即`inner class NameClass{}`
 
 - 构造函数
@@ -36,7 +43,7 @@
         ```
         init范围内的代码可以调用主构造函数内的参数，可以把init看作主构造函数的方法体
 
-    - 次构造函数必须使用constructor关键字，且可以使用this或者super来调用自己的或父类的其它构造，如果主构造函数有参数，则次构造函数必须调用主构造函数，如无参数，会隐式调用
+    - 次构造函数必须使用`constructor`关键字，且可以使用`this`或者`super`来调用自己的或父类的其它构造，如果主构造函数有参数，则次构造函数必须调用主构造函数，如无参数，会隐式调用
         ```
         class CustomView(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : View(context, attrs, defStyleAttr){
            init {
@@ -61,11 +68,9 @@
             super.onCreate(savedInstanceState);
         }
         kotlin:
-        @Override fun onCreate(savedInstanceState: Bundle?):Unit { //Unit可以看作java的void，当方法返回值是Unit是可以省略
+        @Override fun onCreate(savedInstanceState: Bundle?):Unit { //Unit可以看作java的void，当方法返回值是Unit时也可以省略
             super.onCreate(savedInstanceState)
         }
-
-    
         ```
 
 - 参数默认值
@@ -83,7 +88,7 @@
         newView(Context(),defStyleAttr = 1)
         ```
         四种都可以调用该方法，但是使用的值不同，最后一个表示传入context和defStyleAttr的值，但attrs使用默认值    
-        kotlin函数参数可以使用其`参数名称 = 要传的值`来声明该值属于哪一个参数（这是声明而非赋值，as上显示很明显），这样使用时，可以省略中间的某些参数，也可以调转传参数的顺序
+        kotlin函数参数可以使用其`参数名称 = 要传的值`来声明该值属于哪一个参数，即上例中的`defStyleAttr = 1`，这样使用时，可以省略中间的某些参数，也可以调转传参数的顺序
 
 - var、val关键字与类型推断
     - kotlin的变量类型声明需要使用`var/val`关键字，并且写在变量名右边    
@@ -139,8 +144,6 @@
         var a : SportFragment? //a是SportFragment类型且a可能null可以被赋值为null
         ```
         这种声明类似于android的`@Nullable`和`@Nonnull`，但更具强制性        
-        在kotlin调用java的时候，需要根据java或者android中的定义判断其值是否为空，也可以都认为可空来进行非空判断
-
     - kotlin有`?.`和`?:`两种方式来简化空值的判断和操作
     - 对比：    
         ```
@@ -178,8 +181,10 @@
       }
         ```
 
-    - `?:`即为null时的操作，`?:`一般用在赋值操作时，即`val extra = intent?.getStringExtra(KEY_EXTRA_STR) ?: "def"`意味着如果从intent不为null且intent取出的值不为null，则将该值赋予extra，否则，则将`def`赋予extra；`?:`后也可以直接跟`return`或者`throw Exception()`，表明为空时所做的操作
+    - `?:`即为null时的操作，`?:`一般用在赋值操作时，即`val extra = intent?.getStringExtra(KEY_EXTRA_STR) ?: "def"`  
+    意味着如果intent不为null且从intent取出的值不为null，则将该值赋予extra，否则，则将def赋予extra；`?:`后也可以直接跟`return`或者`throw Exception()`，表明为空时所做的操作
     - `!!`：如果一个变量被声明了可为空，但需要它必须不为空，如被当作一个参数传入一个不为空的位置时，需要使用`!!`来告诉编译器该变量此时不为空，否则会编译失败。相当于`Any?`强转为`Any`，如果运行时该变量仍为空，则会抛出空指针异常
+    - 在使用kotlin代码调用java的时候，因为java没有这个强制特性，需要自行根据java中的定义判断其值是否可能为空，也可以都认为可空来进行非空判断
 
 - get/set
     - kotlin的属性会默认加上get(var、val)/set(var)方法，你也可以显示声明其get/set方法，如
@@ -214,7 +219,7 @@
     - `constructor`: kotlin用来显式声明构造方法，没有修饰符如private时或者注解符如@inject时可不写
 
     - `object`: //与java的Object类没有关系，kotlin的object是一个关键字
-        - 声明一个匿名对象
+        - 表示一个匿名对象
             ```
             val click = object : View.OnClickListener{ //click没有声明类型，因为返回值确定
                 override fun onClick(v: View?) {
@@ -225,7 +230,7 @@
             view.setOnClickListener(click)
             ```
             表示声明一个对象click，其值是一个View.OnClickListener的匿名实现
-        - 替代class声明一个类，表示该类是一个单例类，注意：并非静态类，虽然其可以类似静态的访问，由object声明的类可以来写工具类代码
+        - 替代`class`声明一个类，表示该类是一个单例类，注意：并非静态类，虽然其可以类似静态的访问，由`object`声明的类可以来写工具类代码
             ```
             kotlin：
             object Singleton {

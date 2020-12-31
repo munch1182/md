@@ -86,40 +86,43 @@
         kotlin函数参数可以使用其`参数名称 = 要传的值`来声明该值属于哪一个参数（这是声明而非赋值，as上显示很明显），这样使用时，可以省略中间的某些参数，也可以调转传参数的顺序
 
 - var、val关键字与类型推断
-    - kotlin用`var/val`关键字来申明变量类型，以此替代java的类型声明     
+    - kotlin的变量类型声明需要使用`var/val`关键字，并且写在变量名右边    
         ```
         java:
         ArrayList<BaseDto<User>> userList = new ArrayList<BaseDto<User>>()
 
         kotlin:
-        val userList = ArrayList<BaseDto<User>>() // kotlin 的对象去掉了java的new关键字，直接调用构造即可代表新建对象
+        val userList : ArrayList<BaseDto<User>> = ArrayList<BaseDto<User>>() // kotlin 的对象去掉了java的new关键字，直接调用构造即可代表新建对象
         ```
     - 类型推断：简单来说，只要`=`右边能确定变量类型，那么`=`左边就不必显式声明变量的类型，如果不能确定或者需要确定类型，则需要手动声明
         ```
-        val a = 1 // a是int类型
-        val a= 1.0 // a是double类型
-        val a = 1d // a是double类型
+        val a = 1   // a是int类型
+        val a = 1.0 // a是double类型
+        val a = 1d  // a是double类型
         val a = "1" // a是String类型
 
+        val userList = ArrayList<BaseDto<User>>() // userList是ArrayList类型
         val a = SportFragment() // a是SportFragment类型
         val a : Fragment = SportFragment() // a是Fragment的
         ```
-    - kotlin简单的函数也可以这样写来省略返回值声明
+    - kotlin函数也可以这样写来省略返回值声明
         ```
-        fun test() = User()  //test是一个返回User类型的函数，这里省略了返回值声明，省略了{}
+        fun newInstance(name:String) = User(name)  //test是一个返回User类型的函数，这里省略了返回值声明，省略了{}
+
+        fun test() = test("def name") //同上
         ```
     - var和val的区别在于，val声明的变量是final的，不可再更改
-    - 规则其实与java一致，只是写法不一样
+    - 推断规则与java一致，只是写法不一样
     - 从主构造函数可以将构造函数的参数声明为类的变量，只要在参数前加入val/var关键字，其与java传参进构造函数并赋值给变量时一样的，这是kotlin的简化写法。只有主构造函数可以这样声明变量。
         ```
         kotlin:
-        class CustomView(val context2: Context, attrs: AttributeSet?, defStyleAttr: Int) : View(context2, attrs, defStyleAttr) 
-        //此时context2是一个成员变量且被构造赋值，类作用域可用，attrs和defStyleAttr是构造参数，只有init范围可用
+        class CustomView(private val context2: Context, attrs: AttributeSet?, defStyleAttr: Int) : View(context2, attrs, defStyleAttr) 
+        //此时context2是一个私有成员变量且被构造赋值，类作用域可用，attrs和defStyleAttr是构造参数，只有init范围可用
 
         对应的java:
         public class CustomView extends View {
 
-            Context context2;
+            private Context context2;
 
             public CustomView(Context context2, @Nullable AttributeSet attrs, int defStyleAttr) {
                 super(context2, attrs, defStyleAttr);
@@ -191,14 +194,14 @@
             }
         }
         set(value) {
-            field = if (value.contains("debug") && BuildConfig.DEBUG) { //当if-else的操作都是赋值时，就可以这样写
+            field = if (value.contains("debug") && BuildConfig.DEBUG) { //当if-else的操作都是赋值时，就可以这样将=左边放到if-else外面来，if-else里会取最后一行的值
                 value
             } else {
                 URL_RELEASE
             }
         }
     ```
-    调用属性时kotlin会自动省略get/set方法的显示，直接使用url即会自动调用其get方法，直接给url赋值会自动调用set方法，且每次调用时都会调用相应方法
+    调用属性时kotlin会自动省略get/set方法的显示但实际会调用，直接使用url即会自动调用其get方法，直接给url赋值会自动调用set方法，且每次调用时都会调用相应方法
 
 - 类或关键字改变
     - 去掉了`new`关键字，kotlin新建对象只需要调用构造而不需要在前面使用`new`
@@ -221,7 +224,7 @@
             //使用
             view.setOnClickListener(click)
             ```
-            表示声明一个对象clcik，其值是一个View.OnClickListener的匿名实现对象
+            表示声明一个对象click，其值是一个View.OnClickListener的匿名实现
         - 替代class声明一个类，表示该类是一个单例类，注意：并非静态类，虽然其可以类似静态的访问，由object声明的类可以来写工具类代码
             ```
             kotlin：
@@ -234,7 +237,7 @@
                 }
             }
             ```
-            kotlin调用：Singleton.a
+            kotlin调用：Singleton.a     
             java中调用kotlin的Singleton：Singleton.INSTANCE.getA()
 
             编译的java文件：
@@ -276,7 +279,7 @@
 
     - `const`: const关键字表明该值为编译期常量，表明该值固定，否则编译器会当成属性生成相应get/set方法，`const`只支持基础数据类型和String，在类里只能写在`object`或者`companion object`中
 
-    - `@JvmStatic`: 被`@JvmStatic`声明的方法或字段才会被编译成java的`static`，而不是被编译成单例类方法或者字段的形式，这才是java的静态，但是在写法上，`object`可以被看做静态，`@Jvnstatic`一般用于需要被java调用的方法上
+    - `@JvmStatic`: 被`@JvmStatic`声明的方法或字段才会被编译成java的`static`，而不是被编译成单例类方法或者字段的形式，这才是java的静态，但是在写法上，`object`可以被看做静态，`@Jvmstatic`一般用于需要被java调用的方法上
 
     - `open`: kotlin的类如果要可继承，其类需要显式使用`open`关键字，方法如可重写也需要最前面加上`open`关键字，即`class BaseActivity`应该写成`open class BaseActivity`，否则不能继承或者重写
 
@@ -454,11 +457,11 @@
         updateIndex(1) { a-> 
         }
         ```
-        高阶函数将函数当作参数传递，可以以很少代码实现回调或者监听代码，甚至不用声明回调或者listner接口 
+        高阶函数将函数当作参数传递，可以以很少代码实现回调或者监听代码，甚至不用声明回调接口 
 
     - 高阶函数理解上可以看作传入了一个带这个函数类型签名方法的接口类
 
-    - `inline`关键字：因为java不支持函数类型，所以kotlin的函数类型和高阶函数实际上是生成了一个对象来实现的。如果在循环中大量调用高阶函数，则会由内存溢出的风险，此时可以使用`inline`关键字来修饰函数，即:
+    - `inline`关键字：因为java不支持函数类型，所以kotlin的函数类型和高阶函数实际上是生成了一个对象来实现的。如果在循环中大量调用高阶函数，则会由内存损耗，也有内存溢出的风险，此时可以使用`inline`关键字来修饰函数，即:
         ```
         inline fun updateIndex(index: Int, func: (pos: Int) -> Unit) { 
             if (index > 10) {
@@ -485,7 +488,7 @@
 
         ```
         fun Context.startActivity(clazz: Class<out Activity>) { //Context即需要被拓展方法的类，startActivity是自定义的方法名
-            startActivity(Intent(this, clazz))
+            startActivity(Intent(this, clazz)) //这里调用了Context里的startActivity(Intent)方法来实际实现
         }
         //调用
         class MainActivity : BaseActivity(){

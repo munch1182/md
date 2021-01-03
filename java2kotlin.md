@@ -1,11 +1,21 @@
-# Kotlin相较于JAVA的差异 #
+# Kotlin相较于JAVA的差异
 
 - https://www.kotlincn.net/docs/reference/basic-types.html
 - 使用和学习kotlin最简单最快的方法就是将java代码复制到kotlin文件中由as自动转换
 - as-tool-Kotlin-show kotlin bytecode可以看到kotlin编译后的文件
 - kotlin与java的差距多在写法上，kotlin从编译层面对java的写法进行优化，使代码可以写的更简单，实际上实现与java差异不大
 
-## 基础语法 ##
+<!-- @import "[TOC]" {cmd="toc" depthFrom=2 depthTo=3 orderedList=false} -->
+
+<!-- code_chunk_output -->
+
+- [基础语法](#基础语法)
+- [一些细节](#一些细节)
+- [kotlin拓展](#kotlin拓展)
+
+<!-- /code_chunk_output -->
+
+## 基础语法
 
 - 类的继承和实现，
     - 使用`:`来取代`extends`和`implements`，如
@@ -388,13 +398,13 @@
         ```
 
 
-## 一些细节 ##
+## 一些细节
 
 - kotlin对java简化，比如arrayListOf(1,2,3)，这一部分不用记，按照java的方式写后as会自动提示，多提示几遍就记住了
 - 字符串拼接，使用`${}`可以直接调用属性或者函数：`val str = "a = ${a.getInt()}" `
 - `data class`：相当于java的自定义数据类，data class只需要定义属性，kotlin会为其自动实现`toString()`、`hashCode()`、`equals`三个方法
 
-# kotlin拓展 #
+## kotlin拓展
 
 - 属性委托： //https://www.kotlincn.net/docs/reference/delegated-properties.html
     - 某些属性具有延迟属性或者可观察属性时，可使用属性委托来赋值，委托关键字是`by`，如

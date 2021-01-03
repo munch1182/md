@@ -19,11 +19,11 @@
 
 - 类的继承和实现，
     - 使用`:`来取代`extends`和`implements`，如
-    ```
+    ```java
     class MainActivity extends BaseActivity implements View.OnClickListener
     ```
     变成了
-    ```
+    ```kotlin
     class MainActivity : BaseActivity() , View.OnClickListener
     ```
      class继承需要显示声明构造，对于BaseActivity，即`()`，接口则不需要
@@ -37,13 +37,13 @@
 - 构造函数
     - kotlin的构造函数分为主构造函数和次构造函数
     - 主构造函数需要写在类头，使用`constructor`声明，无修饰符时constructor可省略，例如：    
-        ```
+        ```kotlin
         class CustomView constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : View(context, attrs, defStyleAttr)
         ```
         这表明CustomView的主构造函数有三个参数，并且将这三个参数传值给了其父类View
 
     - 如果需要在主构造函数中编写代码，可以使用`init`关键字
-        ```
+        ```kotlin
         class CustomView(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : View(context, attrs, defStyleAttr){
            init {
                 val typedArray = context.obtainStyledAttributes(attrs, R.styleable.CustomView)
@@ -54,7 +54,7 @@
         init范围内的代码可以调用主构造函数内的参数，可以把init看作主构造函数的方法体
 
     - 次构造函数必须使用`constructor`关键字，且可以使用`this`或者`super`来调用自己的或父类的其它构造，如果主构造函数有参数，则次构造函数必须调用主构造函数，如无参数，会隐式调用
-        ```
+        ```kotlin
         class CustomView(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : View(context, attrs, defStyleAttr){
            init {
                 val typedArray = context.obtainStyledAttributes(attrs, R.styleable.CustomView)
@@ -71,27 +71,27 @@
 
 - 方法写法改变
     - 方法需要使用`fun`关键字，并且返回值放到了最右侧，即   
-        ```
-        java:
+        ```java
+        //java:
         @Override
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
         }
-        kotlin:
+        //kotlin:
         @Override fun onCreate(savedInstanceState: Bundle?):Unit { //Unit可以看作java的void，当方法返回值是Unit时也可以省略
             super.onCreate(savedInstanceState)
         }
         ```
 
 - 参数默认值
-    - kotlin可以直接给参数标记上默认值，这样调用者调用方法时，如果传入了改参数的值，则使用传入的值，如果省略了该参数，即使用默认值，类似于java有默认值的方法重载：
-        ```
+    - kotlin可以直接给参数标记上默认值，这样调用者调用方法时，如果传入了该参数的值，则使用传入的值，如果省略了该参数，即使用默认值，类似于java有默认值的方法重载：
+        ```kotlin
         fun newView(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0):CustomView{
            return CustomView(context, attrs, defStyleAttr)
         }
         ```
         调用:
-        ```
+        ```kotlin
         newView(Context())
         newView(Context(),AttributeSet())
         newView(Context(),AttributeSet(),1)
@@ -102,15 +102,15 @@
 
 - var、val关键字与类型推断
     - kotlin的变量类型声明需要使用`var/val`关键字，并且写在变量名右边    
-        ```
-        java:
+        ```java
+        //java:
         ArrayList<BaseDto<User>> userList = new ArrayList<BaseDto<User>>()
 
         kotlin:
         val userList : ArrayList<BaseDto<User>> = ArrayList<BaseDto<User>>() // kotlin 的对象去掉了java的new关键字，直接调用构造即可代表新建对象
         ```
     - 类型推断：简单来说，只要`=`右边能确定变量类型，那么`=`左边就不必显式声明变量的类型，如果不能确定或者需要确定类型，则需要手动声明
-        ```
+        ```kotlin
         val a = 1   // a是int类型
         val a = 1.0 // a是double类型
         val a = 1d  // a是double类型
@@ -121,15 +121,15 @@
         val a : Fragment = SportFragment() // a是Fragment的
         ```
     - kotlin函数也可以这样写来省略返回值声明
-        ```
+        ```kotlin
         fun newInstance(name:String) = User(name)  //test是一个返回User类型的函数，这里省略了返回值声明，省略了{}
 
-        fun test() = test("def name") //同上
+        fun test() = newInstance("def name") //同上
         ```
     - var和val的区别在于，val声明的变量是final的，不可再更改
     - 推断规则与java一致，只是写法不一样
     - 从主构造函数可以将构造函数的参数声明为类的变量，只要在参数前加入val/var关键字，其与java传参进构造函数并赋值给变量时一样的，这是kotlin的简化写法。只有主构造函数可以这样声明变量。
-        ```
+        ```java
         kotlin:
         class CustomView(private val context2: Context, attrs: AttributeSet?, defStyleAttr: Int) : View(context2, attrs, defStyleAttr) 
         //此时context2是一个私有成员变量且被构造赋值，类作用域可用，attrs和defStyleAttr是构造参数，只有init范围可用
@@ -143,21 +143,20 @@
                 super(context2, attrs, defStyleAttr);
                 this.context2 = context2;
             }
-
         }
         ```
 
 - 非空判断
     - kotlin声明类型时需要手动声明类型是否可以为null，如果可能为null，需要添加`?`
-        ```
+        ```kotlin
         var a ：SportFragment //a是SportFragment类型且a不能被传入null
         var a : SportFragment? //a是SportFragment类型且a可能null可以被赋值为null
         ```
         这种声明类似于android的`@Nullable`和`@Nonnull`，但更具强制性        
     - kotlin有`?.`和`?:`两种方式来简化空值的判断和操作
     - 对比：    
-        ```
-        java:
+        ```java
+        //java:
         Intent intent = getIntent();
         if (intent==null){
             return;
@@ -168,17 +167,17 @@
         }
         // do something
 
-        kotlin:(kotlin中getIntent()方法会被简化成intent)
+        //kotlin:(kotlin中getIntent()方法会被简化成intent)
         val extra = intent?.getStringExtra(KEY_EXTRA_STR) ?: return
         // do something
         ```     
         这两种写法是等同的，kotlin编译成java文件其实与java的写法是一致的
     - `?.`即不为null时的操作，由对象调用，是`if(对象 != null)`的简写
     - `?.`的链式调用，会截至到为空的部分位置
-        ```
+        ```kotlin
         A().a()?.b()?.c()?.d()
 
-        编译成java则是
+        //编译成java则是
         A var1 = (new A()).a();
         if (var1 != null) {
             var1 = var1.b();
@@ -198,7 +197,7 @@
 
 - get/set
     - kotlin的属性会默认加上get(var、val)/set(var)方法，你也可以显示声明其get/set方法，如
-    ```
+    ```kotlin
     var url = ""
         get() {
             // field在get/set中即指代当前属性
@@ -230,7 +229,7 @@
 
     - `object`: //与java的Object类没有关系，kotlin的object是一个关键字
         - 表示一个匿名对象
-            ```
+            ```kotlin
             val click = object : View.OnClickListener{ //click没有声明类型，因为返回值确定
                 override fun onClick(v: View?) {
                 }
@@ -241,8 +240,8 @@
             ```
             表示声明一个对象click，其值是一个View.OnClickListener的匿名实现
         - 替代`class`声明一个类，表示该类是一个单例类，注意：并非静态类，虽然其可以类似静态的访问，由`object`声明的类可以来写工具类代码
-            ```
-            kotlin：
+            ```kotlin
+            //kotlin：
             object Singleton {
 
                 val a = getAVal()
@@ -256,7 +255,7 @@
             java中调用kotlin的Singleton：Singleton.INSTANCE.getA()
 
             编译的java文件：
-            ```
+            ```java
             public static final class Singleton {
                 private static final int a;
                 @NotNull
@@ -282,7 +281,7 @@
             ```
 
     - `companion`: 表示伴生对象，每个类只能有一个伴生对象，伴生对象的初始化是在相应的类被加载（解析）时，相当于Java 静态初始化器，相对应的`object`是在调用时，kotlin在`companion`中声明该方法的静态方法或字段
-        ```
+        ```kotlin
         class TestActivity : BaseActivity() {
 
             companion object {
@@ -310,16 +309,18 @@
     - java的基本数据类型在kotlin中使用时被当作对象，分别是`Byte`、`Short`、`Int`、`Long`、`Float`、`Double`、`char`，`String`在kotlin中不是基本数据类型而是独立的数据类型
 
     - kotlin会在编译时优化，如果你只使用了基本数据类型数据的部分，编译时还是会被编译成java的基本数据类型    
-        ```
-        koltin:
+        ```kotlin
+        //koltin:
         val a = 1
         val a1:Int? = 1
         val a2:Int = 1
         val a3 = 1.0
         val a4:Double? = 1.0
         val a5:Double? = null
+        ```
 
-        编译后的java文件:
+        ```java
+        //编译后的java文件:
         int a = true;
         int a1 = true;
         int a2 = true;
@@ -331,7 +332,7 @@
     - 基本数据类型转化：在kotlin中转化需要调用方法，如`val a6 = a4?.toInt()?.toByte()`，其实现与java一致
 
 - 循环与区间：
-    ```
+    ```kotlin
     for (i in 1..4) { //1 <= i && i <= 4
         print(i)
     }
@@ -347,7 +348,7 @@
     - kotlin没有三元表达式`a ? b : c `，可以使用if代替，`if (a) b else c`
 
     - `when`:kotlin没有switch，可以使用when来替代，事实上也会被编译成switch
-        ```
+        ```kotlin
          override fun onOptionsItemSelected(item: MenuItem):Boolean{
              //因为when的分支返回值一致，可以直接将return写在这里
             return when (item.itemId) {
@@ -360,7 +361,7 @@
         ```
         when每一分支是独立的，因此不会有java的缺少`break`而穿透的情形   
         kotlin对when做了拓展，其还可以代替`if()else if() else`块：
-        ```
+        ```kotlin
         val a :Any = 0
         when (a) {
             0, 1, 2 -> {
@@ -388,7 +389,7 @@
     
 - 返回与跳转
     - return/break/continue  默认范围在直接包围它的函数，但是你可以用lable标签来指定返回的位置
-        ```
+        ```kotlin
         out@ for (i in 1..100) {
             inner@ for (j in 1..100) {
                 if (……) 
@@ -408,13 +409,13 @@
 
 - 属性委托： //https://www.kotlincn.net/docs/reference/delegated-properties.html
     - 某些属性具有延迟属性或者可观察属性时，可使用属性委托来赋值，委托关键字是`by`，如
-        ```
+        ```kotlin
         val btn by lazy { findViewById<Button>(R.id.btn) } //因为返回值固定，因此可以使用类型推断省略声明
         ```
         因为btn只有在`setContentView`之后才能被找到，作为属性却要先声明，因此可以使用属性委托先声明一个`lazy`的值，在第一次调用时再从`lazy`中调用`findViewById`然后赋值给btn。(lazy是kotlin的一个委托方法类，类似的委托也可以自行实现)  
         注意：委托的实现方法实际上会在属性被第一次使用时调用，如果不符合条件，如btn在setContentView之前被使用，仍会报错，实际使用中，也要注意与context相关的委托调用的生命周期，也要注意线程相关  
         如果完全依照java的写法，其实应该是：
-        ```
+        ```kotlin
         lateinit var btn: Button 
 
         override fun onCreate(savedInstanceState: Bundle?) {
@@ -426,24 +427,24 @@
 
 - 函数类型:
     - kotlin可以使用与函数签名相同的方式来当作类型，这种类型即函数类型
-        ```
+        ```kotlin
         val clickListener : (pos: Int)->Unit //参数名pos可以省略，但是建议保留用来表明参数的意义
         ```
         表示一个具有 接收一个Int参数，返回一个Unit即无返回 的函数签名的 函数类型
     - 函数类型实例化：
         - lambda表达式:
-            ```
+            ```kotlin
             val clickListener : (pos: Int) -> Unit = { pos ->
             }
             ```
             此时变量`clickListener`已被赋值，调用`clickListener`相当于调用被赋值给`clickListener`的方法     
             此时，依然可以使用类型推断，即：
-            ```
+            ```kotlin
             val clickListener = { pos:Int ->
             }
             ```
         - 匿名函数：
-            ```
+            ```kotlin
             val clickListener : (pos: Int) -> Unit = fun(pos:Int){ 
             }
             //或者
@@ -455,7 +456,7 @@
 
 - 高阶函数:
     - 将函数当作参数或者返回值的函数
-        ```
+        ```kotlin
         fun updateIndex(index: Int, func: (pos: Int) -> Unit) { //func是自定义的函数名，类似于参数名称
             if (index > 10) {
                 func.invoke(index) //此处会调用传入的函数
@@ -477,7 +478,7 @@
     - 高阶函数理解上可以看作传入了一个带这个函数类型签名方法的接口类
 
     - `inline`关键字：因为java不支持函数类型，所以kotlin的函数类型和高阶函数实际上是生成了一个对象来实现的。如果在循环中大量调用高阶函数，则会由内存损耗，也有内存溢出的风险，此时可以使用`inline`关键字来修饰函数，即:
-        ```
+        ```kotlin
         inline fun updateIndex(index: Int, func: (pos: Int) -> Unit) { 
             if (index > 10) {
                 func.invoke(index) //此处会调用传入的函数
@@ -491,7 +492,7 @@
     - `inline`与`noinline`关键字的使用：高阶函数都可以加上`inline`，除非它报错
 
 - reified: 泛型具体化的类型参数，即泛型可以被当作具体的类型来使用
-    ```
+    ```kotlin
     inline fun <reified T: Activity> startActivity() {
         startActivity(Intent(this, T::class.java))
     }
@@ -501,15 +502,24 @@
 - 拓展函数：
     - koltin可以给一个已经存在的类拓展新的方法，而无需继承或者使用像装饰者这样的设计模式。
 
-        ```
+        ```kotlin
         fun Context.startActivity(clazz: Class<out Activity>) { //Context即需要被拓展方法的类，startActivity是自定义的方法名
             startActivity(Intent(this, clazz)) //这里调用了Context里的startActivity(Intent)方法来实际实现
         }
         //调用
         class MainActivity : BaseActivity(){
 
+            companion object{
+
+                fun startMainActivity(context:Context){
+                    context.startActivity(MainActivity::class.java)
+                    //class.java返回一个KClass，可以被当作java的class使用
+                }
+            }
+
             fun test(){
-                startActivity(OtherActivity::class.java) //class.java返回一个KClass，可以被当作java的class使用
+                startActivity(OtherActivity::class.java) 
+                //context子类可以直接调用
             }
         }
         ```
@@ -518,14 +528,17 @@
         
 - 内置函数：
     - `run`：在调用传入的函数后，返回函数的返回值，函数范围内直接调用调用者的方法，具体实现可以查看源码，常用来做非空判断
-        ```
+        ```koltin
         a?.let{ return this+1 } ?: retutn 2
         ```
     - `with`：在调用传入的函数后，返回调用者本身，函数范围内直接调用调用者的方法，常用作初始化
-        ```
+        ```koltin
         addView(ImageView(context).apply{
             setBackgroundColor(Color.RED)
         })
         ```
-
-
+    - `takeIf`: 传入一个返回值为bool的函数，当函数返回true时返回调用者，否则返回空
+        ```kotlin 
+        val isTrue = intent?.getBooleanExtra(KEY,false).takeIf { it == true} ?: return
+        ```
+        当intent为空且或者取出的值为false时都将return

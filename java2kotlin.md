@@ -405,6 +405,16 @@
 - 字符串拼接，使用`${}`可以直接调用属性或者函数：`val str = "a = ${a.getInt()}" `
 - `data class`：相当于java的自定义数据类，data class只需要定义属性，kotlin会为其自动实现`toString()`、`hashCode()`、`equals`三个方法
 - kotlin的函数可以直接写在文件中而无需类包裹，这样的方法全局可用，但实际上kotlin编译成java时会包裹一个文件名加上`kt`后缀的类，java调用这样的方式时需要使用这个类目来调用这个方法，此处可以在文件顶行(在package语句前)使用`@file:JvmName("类名")`来自定义类名，如果有多个文件使用相同类名，还可以使用`@file:JvmMultifileClass`来将这些文件编译到一起
+- 对于类似于自定义view有多个构造函数的且有默认值的情形，可以使用`@JvmOverloads`来简化写法
+    ```kotlin
+    class CustomView @JvmOverloads constructor(context: Context, attrs: AttributeSet?=null, defStyleAttr: Int=0) : View(context, attrs, defStyleAttr){
+        init {
+            val typedArray = context.obtainStyledAttributes(attrs, R.styleable.CustomView)
+            typedArray.recycle()
+        }
+    }
+    ```
+    `@JvmOverloads`会自动生成有默认值的次构造函数
 
 ## kotlin拓展
 

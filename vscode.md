@@ -55,22 +55,36 @@
     - 画图
         ```mermaid
         graph LR
-        A(下载) --> B(安装)
-        B --> C(界面是否顺心)
-        C --> | 顺心 | D(试用)
-        C --> |不顺心| E(卸载)
-        E --> F(寻找下一个)        
-        D --> G(好不好用)
-        G -->  |好用| H(使用)
+        A(下载) --> B[安装]
+        B --> C{界面是否顺心}
+        C --> | 顺心 | D[试用]
+        C --> |不顺心| E[卸载]
+        E --> F{寻找下一个}
+        D --> G{好不好用}
+        G -->  |好用| H[使用]
         G -->  |不好用| E
-        H --> I(长期使用顺不顺心)
+        H --> I{长期使用顺不顺心}
         I --> |顺心| H
         I --> |不顺心| E
         F --> |找不到| J(自己开发)
         F --> |找到| A
         ```
+    - 自带生成目录，需要书写时有结构
+        ```
+        <!-- @import "[TOC]" {cmd="toc" depthFrom=2 depthTo=3 orderedList=false} -->
+        ```
+        也可以直接使用`[TOC]`
     - 参考
         - [在 VSCode 下用 Markdown Preview Enhanced 愉快地写文档](https://zhuanlan.zhihu.com/p/56699805)
+
+- 一些markdown语法:
+    - 上标 2^3^=8 `2^3^=8`
+    - 表格  
+            
+        | item1 | item2 | item3 | item4 |
+        | :---: | :--- | ---: | --- |
+        | item1item1 | item2 | item3item3 | item4 |
+        | item1 | item2item2 | item3 | item4item4 |
 
 ## Java
 

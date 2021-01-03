@@ -1,9 +1,9 @@
 # Kotlin相较于JAVA的差异
 
-- https://www.kotlincn.net/docs/reference/basic-types.html
+- 官方文档：https://www.kotlincn.net/docs/reference/basic-types.html
 - 使用和学习kotlin最简单最快的方法就是将java代码复制到kotlin文件中由as自动转换
-- as-tool-Kotlin-show kotlin bytecode可以看到kotlin编译后的文件
-- kotlin与java的差距多在写法上，kotlin从编译层面对java的写法进行优化，使代码可以写的更简单，实际上实现与java差异不大
+- androidstudio-tool-Kotlin-show kotlin bytecode可以看到kotlin编译后的文件
+- kotlin与java的差距多在写法上，kotlin从编译层面对java的写法进行优化，使代码可以写的更简单
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=2 depthTo=3 orderedList=false} -->
 
@@ -29,9 +29,9 @@
      class继承需要显示声明构造，对于BaseActivity，即`()`，接口则不需要
 
 - 默认可见性
-    - koltin的类如无声明，则是public final的    
-    方法如无声明也是public final的  
-    变量如无声明则是public的
+    - koltin的类如无声明，则是`public final`的    
+    方法如无声明也是`public final`的  
+    变量如无声明则是`public`的
     - kotlin写在其它类内部的类并非内部类，不会持有外部类的默认引用，要成为内部类，需要给写在内部的类使用`inner`关键字即`inner class NameClass{}`
 
 - 构造函数
@@ -101,12 +101,12 @@
         kotlin函数参数可以使用其`参数名称 = 要传的值`来声明该值属于哪一个参数，即上例中的`defStyleAttr = 1`，这样使用时，可以省略中间的某些参数，也可以调转传参数的顺序
 
 - var、val关键字与类型推断
-    - kotlin的变量类型声明需要使用`var/val`关键字，并且写在变量名右边    
+    - kotlin的变量类型声明需要使用`var/val`关键字，并且与java的格式不同
         ```java
         //java:
         ArrayList<BaseDto<User>> userList = new ArrayList<BaseDto<User>>()
 
-        kotlin:
+        //kotlin:
         val userList : ArrayList<BaseDto<User>> = ArrayList<BaseDto<User>>() // kotlin 的对象去掉了java的new关键字，直接调用构造即可代表新建对象
         ```
     - 类型推断：简单来说，只要`=`右边能确定变量类型，那么`=`左边就不必显式声明变量的类型，如果不能确定或者需要确定类型，则需要手动声明
@@ -124,17 +124,17 @@
         ```kotlin
         fun newInstance(name:String) = User(name)  //test是一个返回User类型的函数，这里省略了返回值声明，省略了{}
 
-        fun test() = newInstance("def name") //同上
+        fun test() = newInstance("test name") //同上
         ```
     - var和val的区别在于，val声明的变量是final的，不可再更改
     - 推断规则与java一致，只是写法不一样
-    - 从主构造函数可以将构造函数的参数声明为类的变量，只要在参数前加入val/var关键字，其与java传参进构造函数并赋值给变量时一样的，这是kotlin的简化写法。只有主构造函数可以这样声明变量。
+    - 从主构造函数可以将构造函数的参数直接声明为类的变量，只要在参数前加入val/var关键字，其与java传参进构造函数并赋值给变量是一样的，这是kotlin的简化写法。只有主构造函数可以这样声明变量。
         ```java
-        kotlin:
+        //kotlin:
         class CustomView(private val context2: Context, attrs: AttributeSet?, defStyleAttr: Int) : View(context2, attrs, defStyleAttr) 
         //此时context2是一个私有成员变量且被构造赋值，类作用域可用，attrs和defStyleAttr是构造参数，只有init范围可用
 
-        对应的java:
+        //对应的java:
         public class CustomView extends View {
 
             private Context context2;
@@ -197,24 +197,24 @@
 
 - get/set
     - kotlin的属性会默认加上get(var、val)/set(var)方法，你也可以显示声明其get/set方法，如
-    ```kotlin
-    var url = ""
-        get() {
-            // field在get/set中即指代当前属性
-            return if (BuildConfig.DEBUG) {
-                field
-            } else {
-                URL_RELEASE
+        ```kotlin
+        var url = ""
+            get() {
+                // field在get/set中即指代当前属性
+                return if (BuildConfig.DEBUG) {
+                    field
+                } else {
+                    URL_RELEASE
+                }
             }
-        }
-        set(value) {
-            field = if (value.contains("debug") && BuildConfig.DEBUG) { //当if-else的操作都是赋值时，就可以这样将=左边放到if-else外面来，if-else里会取最后一行的值
-                value
-            } else {
-                URL_RELEASE
+            set(value) {
+                field = if (value.contains("debug") && BuildConfig.DEBUG) { //当if-else的操作都是赋值时，就可以这样将=左边放到if-else外面来，if-else里会取最后一行的值
+                    value
+                } else {
+                    URL_RELEASE
+                }
             }
-        }
-    ```
+        ```
     调用属性时kotlin会自动省略get/set方法的显示但实际会调用，直接使用url即会自动调用其get方法，直接给url赋值会自动调用set方法，且每次调用时都会调用相应方法
 
 - 类或关键字改变
@@ -401,13 +401,14 @@
 
 ## 一些细节
 
-- kotlin对java简化，比如arrayListOf(1,2,3)，这一部分不用记，按照java的方式写后as会自动提示，多提示几遍就记住了
+- kotlin对java的简化，比如`arrayListOf(1,2,3)`，这一部分不用记，按照java的方式写后as会自动提示，多提示几遍就记住了
 - 字符串拼接，使用`${}`可以直接调用属性或者函数：`val str = "a = ${a.getInt()}" `
 - `data class`：相当于java的自定义数据类，data class只需要定义属性，kotlin会为其自动实现`toString()`、`hashCode()`、`equals`三个方法
+- kotlin的函数可以直接写在文件中而无需类包裹，这样的方法全局可用，但实际上kotlin编译成java时会包裹一个文件名加上`kt`后缀的类，java调用这样的方式时需要使用这个类目来调用这个方法，此处可以在文件顶行(在package语句前)使用`@file:JvmName("类名")`来自定义类名，如果有多个文件使用相同类名，还可以使用`@file:JvmMultifileClass`来将这些文件编译到一起
 
 ## kotlin拓展
 
-- 属性委托： //https://www.kotlincn.net/docs/reference/delegated-properties.html
+- 属性委托： https://www.kotlincn.net/docs/reference/delegated-properties.html
     - 某些属性具有延迟属性或者可观察属性时，可使用属性委托来赋值，委托关键字是`by`，如
         ```kotlin
         val btn by lazy { findViewById<Button>(R.id.btn) } //因为返回值固定，因此可以使用类型推断省略声明
@@ -430,7 +431,7 @@
         ```kotlin
         val clickListener : (pos: Int)->Unit //参数名pos可以省略，但是建议保留用来表明参数的意义
         ```
-        表示一个具有 接收一个Int参数，返回一个Unit即无返回 的函数签名的 函数类型
+        表示一个具有 接收一个Int参数，返回一个Unit即无返回 的函数签名的 函数类型，返回类型`Unit`不能省略
     - 函数类型实例化：
         - lambda表达式:
             ```kotlin
@@ -440,7 +441,7 @@
             此时变量`clickListener`已被赋值，调用`clickListener`相当于调用被赋值给`clickListener`的方法     
             此时，依然可以使用类型推断，即：
             ```kotlin
-            val clickListener = { pos:Int ->
+            val clickListener = { pos: Int ->
             }
             ```
         - 匿名函数：
@@ -448,14 +449,14 @@
             val clickListener : (pos: Int) -> Unit = fun(pos:Int){ 
             }
             //或者
-            val clickListener = fun(pos:Int){ 
+            val clickListener = fun(pos: Int){ 
             }
             ```
 
     - 调用: 可以像函数一样调用 `clickListener(1)`，也可以使用`clickListener.invoke(1)`
 
 - 高阶函数:
-    - 将函数当作参数或者返回值的函数
+    - 将函数类型当作参数或者返回值的函数
         ```kotlin
         fun updateIndex(index: Int, func: (pos: Int) -> Unit) { //func是自定义的函数名，类似于参数名称
             if (index > 10) {
@@ -469,7 +470,7 @@
         //调用时生成一个函数并传入
         updateIndex(1, { a->    // a是函数的参数名，可以自定义，跟java一样
         })
-        //当kotlin最后一个参数是函数且调用的时候生成时，可以将`{}`写到参数`()`外，即
+        //当kotlin最后一个参数是函数且调用的时候生成时，可以将{}写到参数()外，即
         updateIndex(1) { a-> 
         }
         ```
@@ -489,11 +490,11 @@
         
     - `noinline`：内联函数内部，函数参数被其它非内联函数调用时，编译器会报错，为了解决这个问题，可以给函数参数加上`noinline`关键字
 
-    - `inline`与`noinline`关键字的使用：高阶函数都可以加上`inline`，除非它报错
+    - `inline`与`noinline`关键字的使用：高阶函数都可以加上`inline`，除非它报错      
 
 - reified: 泛型具体化的类型参数，即泛型可以被当作具体的类型来使用
     ```kotlin
-    inline fun <reified T: Activity> startActivity() {
+    fun <reified T: Activity> startActivity() {
         startActivity(Intent(this, T::class.java))
     }
     //调用
@@ -503,8 +504,15 @@
     - koltin可以给一个已经存在的类拓展新的方法，而无需继承或者使用像装饰者这样的设计模式。
 
         ```kotlin
-        fun Context.startActivity(clazz: Class<out Activity>) { //Context即需要被拓展方法的类，startActivity是自定义的方法名
-            startActivity(Intent(this, clazz)) //这里调用了Context里的startActivity(Intent)方法来实际实现
+        //定义
+        //out是一个类型限定，类似于java的Class<? extend Activity>
+        fun Context.startActivity(clazz: Class<out Activity>) { 
+            //Context即需要被拓展方法的类，startActivity是自定义的方法名
+            //此方法可以被Context及其子类调用
+            startActivity(Intent(this, clazz)) 
+            //这里调用了Context里的startActivity(Intent)方法来实际实现
+            //this即调用的Context的this
+            //在方法体内，可以被看做在Context类里面，来调用其方法或者属性
         }
         //调用
         class MainActivity : BaseActivity(){
@@ -518,13 +526,13 @@
             }
 
             fun test(){
-                startActivity(OtherActivity::class.java) 
                 //context子类可以直接调用
+                startActivity(OtherActivity::class.java) 
             }
         }
         ```
         拓展方法可以写在类里，类范围可用，如果写在单独的kt文件中，则全局可用    
-        实际上kotlin编译后是生成了一个类并将被拓展的类当作参数传入一个拓展的方法中，在代码中调用实际通过生成的类调用拓展方法    
+        实际上kotlin编译后是生成了一个工具类并将被拓展的类当作参数传入一个拓展的方法中，在调用代码处则是调用实际生成的工具类调用拓展方法   
         
 - 内置函数：
     - `run`：在调用传入的函数后，返回函数的返回值，函数范围内直接调用调用者的方法，具体实现可以查看源码，常用来做非空判断
@@ -541,4 +549,4 @@
         ```kotlin 
         val isTrue = intent?.getBooleanExtra(KEY,false).takeIf { it == true} ?: return
         ```
-        当intent为空且或者取出的值为false时都将return
+        当intent为空或者取出的值为false时都将return

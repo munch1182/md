@@ -12,11 +12,15 @@
 - [Navigation](#navigation)
 - [paging](#paging)
 - [hilt](#hilt)
+- [app startup](#app-startup)
+- [datastore](#datastore)
 - [未完成](#未完成)
 - [viewBinding使用](#viewbinding使用)
 - [databinding使用](#databinding使用)
 - [viewPager2使用](#viewpager2使用)
 - [hilt的使用](#hilt的使用)
+- [startup使用](#startup使用)
+- [datastore使用](#datastore使用)
 
 <!-- /code_chunk_output -->
 
@@ -114,6 +118,33 @@
 - 缺点：
     - 需要理解注入体系
     - 会生成很多的代理类，因此偶尔错误不会指向自己的代码而指向代理类中
+
+## app startup
+
+- 用于初始化任务，许多第三方库利用`ContentProvider`可以在xml文件中注册并先于`Application`执行来进行无感知初始化并获取context，但过多的库使用多个`ContentProvider`会增加启动时间，所以就出了这个库来统一初始化任务
+
+- 官方文档： https://developer.android.google.cn/topic/libraries/app-startup
+- 参考： https://guolin.blog.csdn.net/article/details/108026357
+
+- 当前版本: 1.0.0
+
+- 使用： [startup使用](#startup使用)
+
+## datastore
+
+- 用于替代`SharedPreferences`，使用flow实现异步返回，避免阻塞主线程
+
+- 官方文档: https://developer.android.google.cn/topic/libraries/architecture/datastore#preferences-datastore
+
+- 当前版本：1.0.0-alpha04
+
+- 使用： [datastore使用](#datastore使用)
+
+- 优点：
+    - 避免了`SharedPreferences`的漏洞，诸如阻塞线程，有造成anr的风险等问题
+- 缺点：
+    - 需要熟悉协程，因为它的写入是在协程中进行
+    - 需要熟悉`flow`，因为其返回值是一个`flow`对象
 
 ## 未完成
 - Rxjava / 协程flow
@@ -350,3 +381,68 @@
     }
     ```
 4. 注意点：hilt库最主要要注意的就是作用域，不同的作用域会生成不同的对象
+
+## startup使用
+1. 启用
+    ```kotlin
+    dependencies {
+        implementation "androidx.startup:startup-runtime:1.0.0"
+    }
+    ```
+2. 实现
+    ```kotlin
+    class MyInitializer : Initializer<Unit> {
+        override fun create(context: Context) {
+            //进行初始化
+        }
+        //如果依赖其它初始任务，则返回其列表，startup会在依赖项目初始化只会再初始化本类
+        override fun dependencies(): MutableList<Class<out Initializer<*>>> {
+            return mutableListOf()
+        }
+    }
+    ```
+3. 注册
+    ```xml
+    <provider
+        android:name="androidx.startup.InitializationProvider"
+        android:authorities="${applicationId}.androidx-startup"
+        android:exported="false"
+        tools:node="merge">
+        <!--name需要更改为实现了Initializer的类，其余内容诸如name、authorities不可更改-->
+        <meta-data android:name="com.example.ExampleLoggerInitializer"
+                tools:node="remove" />
+    </provider>
+    ```
+4. 注意：此类先于application执行，因此只适合不依赖application的初始化
+
+## datastore使用
+1. 启用:
+    - datastore有两种版本，一种使用键值对，另一种使用`Proto`结构保持，这是一种诸如`xml`但于`xml`不同的结构，此处只实验了第一张版本
+    ```kotlin
+    dependencies {
+        implementation "androidx.datastore:datastore-preferences:1.0.0-alpha04"
+    }
+    ```
+2. 创建
+    ```kotlin 
+    //这是一个拓展函数
+    val dataStore = context.createDataStore("datastore_name")
+    ```
+3. 写入
+    - 写入是在子线程
+    - 键值对的键是一个`Preferences.Key<T>`类型，可以用`preferencesKey(String)`方法生成
+    - `preferencesKey`方法只支持`Int`、`String`、`Boolean`、`Float`、`Long`、`Double`类型
+    ```kotlin
+    dataStore.edit {
+        it[preferencesKey<Boolean>("isset")] = true
+    }
+    ```
+4. 读取：读取返回的是一个`flow`对象，而非直接返回结果
+    ```kotlin
+    val isSetFlow: Flow<Boolean> = dataStore.data.map {
+        it[preferencesKey("isset")] ?: false
+    }
+    isSetFlow.collect {
+        //获取到结果it
+    }
+    ```

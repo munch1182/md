@@ -6,31 +6,31 @@
 
 <!-- code_chunk_output -->
 
-- [viewBinding](#viewbinding)
+- [ViewBinding](#viewbinding)
 - [DataBinding](#databinding)
-- [viewpager2](#viewpager2)
+- [ViewPager2](#viewpager2)
 - [Navigation](#navigation)
-- [paging](#paging)
-- [hilt](#hilt)
-- [app startup](#app-startup)
-- [datastore](#datastore)
+- [Paging](#paging)
+- [Hilt](#hilt)
+- [AppStartup](#appstartup)
+- [DataStore](#datastore)
 - [未完成](#未完成)
-- [viewBinding使用](#viewbinding使用)
-- [databinding使用](#databinding使用)
-- [viewPager2使用](#viewpager2使用)
-- [hilt的使用](#hilt的使用)
-- [startup使用](#startup使用)
-- [datastore使用](#datastore使用)
+- [ViewBinding使用](#viewbinding使用)
+- [DataBinding使用](#databinding使用)
+- [ViewPager2使用](#viewpager2使用)
+- [Hilt的使用](#hilt的使用)
+- [Startup使用](#startup使用)
+- [DataStore使用](#datastore使用)
 
 <!-- /code_chunk_output -->
 
-## viewBinding
+## ViewBinding
 
 - viewBinding用来查找布局文件中的控件，替代`findViewById()`和`ButterKnife`以及`kotlin-android-extensions`
 
 - 官方文档：https://developer.android.google.cn/topic/libraries/view-binding?hl=zh_cn
 
-- 使用：[viewBinding使用](#viewbinding使用)
+- 使用：[ViewBinding使用](#Viewbinding使用)
 
 - 优点
     - ViewBinding简单好用, as原生支持, 创建或者更改xml都会自动编译更改且无感知, 点击类直接跳转xml文件
@@ -43,7 +43,7 @@
 
 - 官方文档：https://developer.android.google.cn/topic/libraries/data-binding?hl=zh_cn
 
-- 使用：[databinding使用](#databinding使用)
+- 使用：[DataBinding使用](#DataBinding使用)
 
 - 优点：
     - 带有`viewBinding`的功能，但必须要有`layout`标签
@@ -57,7 +57,7 @@
     - dataBinding写在xml中，当前版本虽然支持对错误的提示但是并不及代码中的错误提示智能
     - dataBinding布局必须要有layout标签，因此如果页面由多个布局在代码中拼接，则对页面的绑定需要自行判断调用，对`include`之类在xml中完成布局的无影响，带有databinding的`include`也可正常使用
 
-## viewpager2
+## ViewPager2
 
 - viewpager的升级版本，`viewpager2`基于`RecyclerView`
 
@@ -65,7 +65,7 @@
 
 - 当前版本：1.0.0
 
-- 使用：[viewPager2使用](#viewpager2使用)
+- 使用：[ViewPager2使用](#ViewPager2使用)
 
 - 优点：
     - 默认无缓存，且只创建当前`Fragment`
@@ -88,7 +88,7 @@
     - 所有的页面使用fragment完成，但其还是在acivity上，与android的交互如`StatusBar`之类的还是要经过activity
     - 基本支持activity的过场动画，但是需要设置，不如activity简便
 
-## paging
+## Paging
 
 - 官方分页库
 
@@ -98,7 +98,7 @@
 - paging有两个版本，paging2是目前的稳定版本，但paging3重写了paging2，更改了paging2的结构和api，但目前仍处于alpha版本中，其使用kotlin语言，使用flow
 
 
-## hilt
+## Hilt
 
 - 官方的依赖注入库，用于注入对象解耦，是`dagger2`的android场景化
 
@@ -109,7 +109,7 @@
 
 - 当前版本：2.30-alpha
 
-- 使用：[hilt的使用](#hilt的使用)
+- 使用：[Hilt的使用](#Hilt的使用)
 
 - 优点：
     - 解耦合
@@ -119,7 +119,7 @@
     - 需要理解注入体系
     - 会生成很多的代理类，因此偶尔错误不会指向自己的代码而指向代理类中
 
-## app startup
+## AppStartup
 
 - 用于初始化任务，许多第三方库利用`ContentProvider`可以在xml文件中注册并先于`Application`执行来进行无感知初始化并获取context，但过多的库使用多个`ContentProvider`会增加启动时间，所以就出了这个库来统一初始化任务
 
@@ -128,9 +128,9 @@
 
 - 当前版本: 1.0.0
 
-- 使用： [startup使用](#startup使用)
+- 使用： [Startup使用](#Startup使用)
 
-## datastore
+## DataStore
 
 - 用于替代`SharedPreferences`，使用flow实现异步返回，避免阻塞主线程
 
@@ -138,7 +138,7 @@
 
 - 当前版本：1.0.0-alpha04
 
-- 使用： [datastore使用](#datastore使用)
+- 使用： [DataStore使用](#DataStore使用)
 
 - 优点：
     - 避免了`SharedPreferences`的漏洞，诸如阻塞线程，有造成anr的风险等问题
@@ -150,7 +150,7 @@
 - Rxjava / 协程flow
 - objectbox / room
 
-## viewBinding使用
+## ViewBinding使用
 
 1. 启用: 在`build.gradle`文件中设置
     ```kotlin
@@ -180,7 +180,7 @@
         }
         ```
     - 如果不需要生成Binging类，则需要在xml文件中最外层的标签内添加`tools:viewBindingIgnore="true"`
-## databinding使用
+## DataBinding使用
 1. 启用: 在`build.gradle`文件中设置
     ```kotlin
     android {
@@ -267,7 +267,7 @@
     }
     ```
 
-## viewPager2使用
+## ViewPager2使用
 1. 启用
     ```kotlin
     dependencies {
@@ -276,7 +276,7 @@
     ```
 2. 继承`FragmentStateAdapter`并实现`createFragment()`和`getItemCount`再将该adapter通过viewPager2的setAdapter设置即可
 
-## hilt的使用
+## Hilt的使用
 1. 启用
     ```kotlin
     buildscript {
@@ -382,7 +382,7 @@
     ```
 4. 注意点：hilt库最主要要注意的就是作用域，不同的作用域会生成不同的对象
 
-## startup使用
+## Startup使用
 1. 启用
     ```kotlin
     dependencies {
@@ -408,16 +408,16 @@
         android:authorities="${applicationId}.androidx-startup"
         android:exported="false"
         tools:node="merge">
-        <!--name需要更改为实现了Initializer的类，其余内容诸如name、authorities不可更改-->
+        <!--name需要更改为实现了Initializer的类，其余内容诸如authorities不可更改-->
         <meta-data android:name="com.example.ExampleLoggerInitializer"
                 tools:node="remove" />
     </provider>
     ```
 4. 注意：此类先于application执行，因此只适合不依赖application的初始化
 
-## datastore使用
+## DataStore使用
 1. 启用:
-    - datastore有两种版本，一种使用键值对，另一种使用`Proto`结构保持，这是一种诸如`xml`但于`xml`不同的结构，此处只实验了第一张版本
+    - datastore有两种版本，一种使用键值对，另一种使用`Proto`结构，这是一种诸如`xml`但与`xml`不同的结构，此处只实验了第一种版本
     ```kotlin
     dependencies {
         implementation "androidx.datastore:datastore-preferences:1.0.0-alpha04"
@@ -425,15 +425,16 @@
     ```
 2. 创建
     ```kotlin 
-    //这是一个拓展函数
+    //这是一个kt的拓展函数
     val dataStore = context.createDataStore("datastore_name")
     ```
 3. 写入
-    - 写入是在子线程
+    - 写入是在子线程，且是在协程中
     - 键值对的键是一个`Preferences.Key<T>`类型，可以用`preferencesKey(String)`方法生成
-    - `preferencesKey`方法只支持`Int`、`String`、`Boolean`、`Float`、`Long`、`Double`类型
+    - `preferencesKey(String)`方法只支持`Int`、`String`、`Boolean`、`Float`、`Long`、`Double`类型
     ```kotlin
     dataStore.edit {
+        //子线程
         it[preferencesKey<Boolean>("isset")] = true
     }
     ```

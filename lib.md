@@ -16,12 +16,13 @@
 - [viewBinding使用](#viewbinding使用)
 - [databinding使用](#databinding使用)
 - [viewPager2使用](#viewpager2使用)
+- [hilt的使用](#hilt的使用)
 
 <!-- /code_chunk_output -->
 
 ## viewBinding
 
-- 用处：viewBinding用来查找布局文件中的控件，替代`findViewById()`和`ButterKnife`以及`kotlin-android-extensions`
+- viewBinding用来查找布局文件中的控件，替代`findViewById()`和`ButterKnife`以及`kotlin-android-extensions`
 
 - 官方文档：https://developer.android.google.cn/topic/libraries/view-binding?hl=zh_cn
 
@@ -34,7 +35,7 @@
 
 ## DataBinding 
 
-- 用处：`dataBinding`用来绑定数据与视图，`dataBinding`有`viewBinding`的功能，同时可以在布局文件中直接将控件与数据绑定，支持单向绑定和双向绑定
+- `dataBinding`用来绑定数据与视图，`dataBinding`有`viewBinding`的功能，同时可以在布局文件中直接将控件与数据绑定，支持单向绑定和双向绑定
 
 - 官方文档：https://developer.android.google.cn/topic/libraries/data-binding?hl=zh_cn
 
@@ -54,7 +55,7 @@
 
 ## viewpager2
 
-- 用处：viewpager的升级版本，`viewpager2`基于`RecyclerView`
+- viewpager的升级版本，`viewpager2`基于`RecyclerView`
 
 - 官方文档：https://developer.android.google.cn/guide/navigation/navigation-swipe-view-2
 
@@ -69,7 +70,7 @@
 
 ##  Navigation
 
-- 用处：用于`Fragment`间页面跳转，可以用来替代`FragmentTransaction`相关的api，适合一个activity多个fragment组成的情形
+- 用于`Fragment`间页面跳转，可以用来替代`FragmentTransaction`相关的api，适合一个activity多个fragment组成的情形
 - 可以理解为对fragment的事务进行了升级，并完善了动画以及图形化支持
 
 - 官方文档：https://developer.android.google.cn/guide/navigation
@@ -85,25 +86,34 @@
 
 ## paging
 
-- 用处：官方分页库
+- 官方分页库
 
 - 官方文档：https://developer.android.google.cn/topic/libraries/architecture/paging?hl=zh_cn
 
 - 当前版本：2.1.2 / 3.0.0-alpha11
 - paging有两个版本，paging2是目前的稳定版本，但paging3重写了paging2，更改了paging2的结构和api，但目前仍处于alpha版本中，其使用kotlin语言，使用flow
 
+
 ## hilt
 
-- 用处：官方的依赖注入库，用于注入对象解耦，是`dagger2`的android场景化
+- 官方的依赖注入库，用于注入对象解耦，是`dagger2`的android场景化
+
 - 官方文档：
     - https://developer.android.google.cn/training/dependency-injection/hilt-android?hl=zh_cn     
     - https://dagger.dev/hilt/gradle-setup
+- 参考: https://blog.csdn.net/guolin_blog/article/details/109787732
+
 - 当前版本：2.30-alpha
+
+- 使用：[hilt的使用](#hilt的使用)
+
 - 优点：
     - 解耦合
-    - 相较于`dagger2`，`hilt`难度大大降低，编写的样本代码也很少
+    - 相较于`dagger2`，`hilt`难度不高，编写的样本代码很少
+    - as支持注入跳转
 - 缺点：
-    - 需要理解注入体系，有一点的门槛
+    - 需要理解注入体系
+    - 会生成很多的代理类，因此偶尔错误不会指向自己的代码而指向代理类中
 
 ## 未完成
 - Rxjava / 协程flow
@@ -138,6 +148,7 @@
             mainTv3.setTextColor(Color.BLACK)
         }
         ```
+    - 如果不需要生成Binging类，则需要在xml文件中最外层的标签内添加`tools:viewBindingIgnore="true"`
 ## databinding使用
 1. 启用: 在`build.gradle`文件中设置
     ```kotlin
@@ -233,3 +244,109 @@
     }
     ```
 2. 继承`FragmentStateAdapter`并实现`createFragment()`和`getItemCount`再将该adapter通过viewPager2的setAdapter设置即可
+
+## hilt的使用
+1. 启用
+    ```kotlin
+    buildscript {
+        dependencies {
+            classpath 'com.google.dagger:hilt-android-gradle-plugin:2.30-alpha'
+        }
+    }
+    //-------------------------------------------------//
+    //需要使用kapt
+    apply plugin: 'kotlin-kapt'
+    apply plugin: 'dagger.hilt.android.plugin'
+
+    android {
+        //需要使用java8的特性
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
+    }
+    dependencies {
+        implementation "com.google.dagger:hilt-android:2.30-alpha"
+        kapt "com.google.dagger:hilt-android-compiler:2.30-alpha"
+        //hilt对viewModel的优化库
+        implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha02'
+        kapt 'androidx.hilt:hilt-compiler:1.0.0-alpha02'
+    }
+    ```
+2. 入口：自定义app类添加注解`@HiltAndroidApp`并在xml中声明app类，这一步是必须的，这是hilt的入口
+3. 使用：
+    ```kotlin
+    //SingletonModule是一个自定义类
+    //用于提供一些注解对象的生成，主要是第三方的对象，需要使用@Module
+    //@InstallIn()表明作用域，即在该作用域下这些注解可以这样生成
+    //SingletonComponent::class是hilt的类，表明作用域为全局单例
+    @Module
+    @InstallIn(SingletonComponent::class)
+    object SingletonModule {
+
+        //当在该作用域下使用一个Retrofit的依赖注入对象时，hilt会从此处生成一个Retrofit对象
+        //当然如果是单例的只会生成一次
+        //提供注解对象需要使用@Provides
+        //此方法为自定义方法，返回值即表明提供的注解对象，此处为Retrofit
+        //参数是所需要的参数，如果该注解需要参数，那么该参数也必须可以依赖注入生成，见provideOkHttpClient方法
+        @Provides
+        fun provideRetrofit(client: OkHttpClient): Retrofit {
+            return Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create(Gson()))
+                .client(client)
+                .build()
+        }
+
+        @Provides
+        fun provideOkHttpClient(): OkHttpClient {
+            return OkHttpClient.Builder().build()
+        }
+
+        @Provides
+        fun provideApi(retrofit: Retrofit): Api = retrofit.create(Api::class.java)
+    }
+    //@Inject注解构造即告诉hilt当需要一个新的TestRepository对象时需要怎样生成
+    //类似于@Provides但是被简化了，也可以以类似 @Provides的方式提供
+    //同样的，如果有参数，则参数也必须可以提供依赖注入对象
+    class TestRepository @Inject constructor() : BaseRepository() {
+
+        //通过依赖注入直接生成一个Api对象
+        //对于使用者来说，无需关心api是怎样生成的，也无需依赖api生成所依赖的类，这就是依赖注入的作用
+        //诸如工厂方法、静态方法生成之类的，不是在调用处创建对象的都是依赖注入的概念
+        //因为要依赖注入赋值，变量不能是val声明并且不能私有，构造函数同理
+        @Inject
+        lateinit var api: Api
+
+        //依赖注入是根据对象类型生成的
+        //如果一个类的依赖注入的作用域非单例的(非全局单例或者作用域里非单例)
+        //那么注入一次，即会调用注入方法(构造函数或者@Provides)一次
+        //此处因为Api是单例注入的，所以api和api2是相同对象，否则，会是两个不同对象
+        @Inject
+        lateinit var api2: Api
+
+        fun test(){
+            //api可以直接使用
+            //此时hilt会根据作用域层层搜索一个Api对象，找到SingletonModule类中的provideApi方法
+            //然后将返回值赋给api
+            api.search()
+        }
+    }
+
+    //ViewModelInject是hilt-lifecycle-viewmodel库的注解
+    //如果不引入这个库则需要使用@ActivityRetainedScoped注明在activity生命周期内保持单一，并使用@Inject提供构造
+    class TestJetpackViewModel @ViewModelInject constructor(
+        private val repository: ArticleRepository) :ViewModel() {
+
+    }
+
+    //如果要在Activity中使用依赖注入则@AndroidEntryPoint是必须的声明，这是hilt的入口之一
+    @AndroidEntryPoint
+    class TestJetpackActivity : AppCompatActivity() {
+
+        //因为ViewModelInject注解，所以viewModel可以以原来的方式生成
+        private val viewModel by { ViewModelProvider(this).get(TestJetpackViewModel::class.java) }
+
+    }
+    ```
+4. 注意点：hilt库最主要要注意的就是作用域，不同的作用域会生成不同的对象

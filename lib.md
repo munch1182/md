@@ -1,7 +1,5 @@
 # 技术
 
-- 简单用法见最后
-
 <!-- @import "[TOC]" {cmd="toc" depthFrom=2 depthTo=3 orderedList=false} -->
 
 <!-- code_chunk_output -->
@@ -11,10 +9,10 @@
 - [ViewPager2](#viewpager2)
 - [Navigation](#navigation)
 - [Paging](#paging)
+- [Room](#room)
 - [Hilt](#hilt)
 - [AppStartup](#appstartup)
 - [DataStore](#datastore)
-- [未完成](#未完成)
 - [ViewBinding使用](#viewbinding使用)
 - [DataBinding使用](#databinding使用)
 - [ViewPager2使用](#viewpager2使用)
@@ -22,6 +20,7 @@
 - [Startup使用](#startup使用)
 - [DataStore使用](#datastore使用)
 - [Paging3的使用](#paging3的使用)
+- [Room的使用](#room的使用)
 
 <!-- /code_chunk_output -->
 
@@ -35,9 +34,6 @@
 
 - 优点
     - ViewBinding简单好用, as原生支持, 创建或者更改xml都会自动编译更改且无感知, 点击类直接跳转xml文件
-- 缺点
-    - 功能简单
-    - 所有类都需要编译后才能找到算是一个缺点
 
 ## DataBinding 
 
@@ -103,11 +99,31 @@
 - 使用：[Paging3的使用](#paging3的使用)
 
 - 优点：
-    - 官方支持，有了rv的`refresh`、`retry`等api
-    - 与`room`、`RecyclerViewAdapter`配合好，特别是`room`的配合可以简化很多代码
+    - 官方支持，自动加载更多而无需手动处理相关逻辑
+    - 有了adapter的`refresh`、`retry`等api，处理刷新、重试逻辑异常简单
+    - 与`room`的配合可以简化很多代码
+    - 可以以比较少的代码实现带数据库缓存的分页，对于这类需求帮助很大
 - 缺点：
-    - 与其它官方的`alpha`版本相比，`paging3`当前并不稳定，部分api未完成或者仍处于实验中
-    - 如果使用的数据库不支持paging的特性，则需要写代码去实现
+    - 与其它官方的`alpha`版本相比，`paging3`当前并不稳定，部分api仍处于实验中
+    - 如果要使用数据库缓存，而使用的数据库不支持`paging`的特性，则需要自行写代码去实现
+
+## Room
+
+- 官方基于SQLite的数据库
+
+- 官方文档: https://developer.android.google.cn/topic/libraries/architecture/room
+- 当前版本: 2.2.5
+
+- 使用： [Room的使用](#room的使用)
+
+- 优点：
+    - 官方支持，基于sqlite，无需额外引入，打包不会增加额外的大小
+    - 自行书写sql语句，可以书写诸如多表内联查询这种语句，更加自由灵活
+    - as支持表名提示，字段提示，错误检查，也支持数据库直接查看和语句测试
+    - 与其它jetpack组件联系紧密，比如`paging`
+- 缺点：
+    - 速度偏慢，虽然用户感知差异较小，但对比其它数据库速度仍有差距
+    - 需要自行完成版本管理，进行升级和降级，特别是在sqlite没有删除列指令的情况下
 
 ## Hilt
 
@@ -157,9 +173,7 @@
     - 需要熟悉协程，因为它的写入是在协程中进行
     - 需要熟悉`flow`，因为其返回值是一个`flow`对象
 
-## 未完成
-- Rxjava / 协程flow
-- objectbox / room
+---
 
 ## ViewBinding使用
 
@@ -320,6 +334,7 @@
     ```kotlin
     //SingletonModule是一个自定义类
     //用于提供一些注解对象的生成，主要是第三方的对象，需要使用@Module
+    //如果无需这些对象则无需这样实现
     //@InstallIn()表明作用域，即在该作用域下这些注解可以这样生成
     //SingletonComponent::class是hilt的类，表明作用域为全局单例
     @Module
@@ -479,10 +494,11 @@
     }
     ```
 2. 架构
-    - 单一数据源
+    - 单一数据源，只从数据库或者只从服务器中获取数据，无缓存
     ![paging3 architecture1](https://developer.android.google.cn/topic/libraries/architecture/images/paging3-library-architecture.svg)
-    - 将数据库作为单一数据源，远程数据先更新数据库，再通过数据库的数据刷新页面
+    - 将数据库作为单一数据源，远程数据先更新数据库，再通过数据库的数据刷新页面，数据库同时作为缓存存在
     ![paging3 architecture2](https://developer.android.google.cn/topic/libraries/architecture/images/paging3-layered-architecture.svg)
+    - 单一数据源适合简单或者页面数据要求准确或者有时效性，而数据库作为缓存的架构适合展示类且变化不大的页面
 3. 使用
     ```kotlin
     //1. 实现PagingDataAdapter,相较于RecyclerView.Adapter，
@@ -511,6 +527,7 @@
     getAllUser()
         .flow
         .collect {
+            //PagingDataAdapter接收数据
             rvAdapter.submitData(this.lifecycle, it)
         }
     //4. 构建Pager
@@ -542,12 +559,14 @@
                     }
                 }
                 //单一数据源，则无需设置此数据源
-            },remoteMediator = null)
+            }, remoteMediator = null)
     }
     //b. 双层数据源，pagingSourceFactory无效时才从remoteMediator中获取
     @ExperimentalPagingApi
     fun getAllUser(): Pager<Int, User> {
-        //自行构造一个Pager实例，initialKey是初始key值，即初始页码
+        //自行构造一个Pager实例，
+        //pageSize是每页数量，initialKey是初始key值，即初始页码
+        //PagingConfig主要用来设置页面相关，包括当滑动到倒数第几个就开始加载更多等属性
         return Pager(PagingConfig(pageSize = 20), initialKey = 0,
             //room作为数据源
             //room支持返回DataSource.Factory<Int, ArticleDto>类型，
@@ -557,7 +576,7 @@
             //官方推荐的架构是pagingSourceFactory用数据库作为唯一数据源，当pagingSourceFactory没有数据时，会调用remoteMediator，
             //此时remoteMediator获取服务器数据，然后写入数据库，再让pagingSourceFactory从数据库中读取
             //要实现这种架构，需要作为pagingSourceFactory的数据库能处理数据失效的情形，
-            //自行构建的PagingSource是无效的，必须与数据库相关联
+            //自行构建的PagingSource是无法处理的，必须与数据库相关联
             //如果pagingSourceFactory不处于无效状态，remoteMediator就不会被调用
             //room可以自动处理，其它数据库可能需要参照实现去处理状态
             remoteMediator = object : RemoteMediator<Int, User>() {
@@ -574,14 +593,105 @@
                     val key = getKey(loedType,state)
                     //从服务器中获取数据
                     val list = api.getAllUser(key)
+                    //判断是否还有更多数据
+                    val hasMore = judgeHasMore(key,list)
                     //将数据更新到数据库
                     ...
-                    //返回成功信号，让paging从数据库中去获取数据
-                    return MediatorResult.Success(false)
+                    //返回成功信号，让paging从数据库中去获取数据，
+                    //endOfPaginationReached用以判断是否还有更多数据
+                    return MediatorResult.Success(endOfPaginationReached=hasMore)
                 }
             })
     }
     ```
 
+## Room的使用
+1. 启用
+    ```kotlin
+    kapt {
+        arguments {
+            //将room的sql结构存放到该地址
+            //书写迁移语句时可以复制语句
+            arg("room.schemaLocation", "$projectDir/schemas".toString())
+        }
+    }
+    dependencies {
+        def room_version = "2.2.5"
+        implementation "androidx.room:room-runtime:$room_version"
+        kapt "androidx.room:room-compiler:$room_version"
+        // optional - Kotlin Extensions and Coroutines support for Room
+        implementation "androidx.room:room-ktx:$room_version"
+    }
+    ```
+2. 使用， 通过定义、注解的方式，`Room`可以自动生成相应的执行实现，以此来简化操作
+    ```kotlin
+    //1. 定义实体类，需要用@Entity注解
+    //tableName 、ColumnInfo都是可选的
+    //数据库不支持List类型，可以用两种方法解决
+    //数据较为简单的可以使用@TypeConverters(class)来进行转换读写，比如用gson转为string进行读写
+    //数据较为复杂的建议使用关系映射@Relation
+    @Entity(tableName = "tb_user")
+    data class User(
+        @PrimaryKey val uid: Int,
+        @ColumnInfo(name = "first_name") val firstName: String?,
+        @ColumnInfo(name = "last_name") val lastName: String?
+    ){
+        //忽略的属性，不会被存进数据库
+        @Ignore
+        var list:String? = null
+    }
+    //2. 定义Dao，需要使用@Dao注解，用以调用sql语句
+    @Dao
+    interface UserDao {
+        //查询语句，room支持多种返回值，也可以加拓展库去支持更多的返回值类型
+        @Query("SELECT * FROM tb_user")
+        fun getAll(): List<User>
 
+        //带条件的查询，:userIds即可代表参数
+        @Query("SELECT * FROM tb_user WHERE uid IN (:userIds)")
+        fun loadAllByIds(userIds: IntArray): List<User>
+
+        //带条件的查询并且限定返回
+        //$TB_NAME_USER指向一个常量，等于tb_user
+        //room也支持多表内联查询，相较于查询后组合的方式，这种方式更为简单高效
+        @Query("SELECT * FROM $TB_NAME_USER WHERE first_name LIKE :first AND " +
+               "last_name LIKE :last LIMIT 1")
+        fun findByName(first: String, last: String): User
+
+        //room也支持协程
+        @Insert
+        suspend fun insertAll(vararg users: User)
+
+        //更新方法
+        @Query("UPDATE $TB_NAME_USER SET `first_name` = :firstName WHERE `uid` = :uid")
+        suspend fun updateFirstName(uid:Int, firstName:String)
+
+        @Delete
+        fun delete(user: User)
+
+        //这种调用多个数据方法的方法需要@Transaction声明
+        @Transaction
+        suspend fun replace(user:User,newUser:User){
+            delete(user)
+            insertAll(newUser)
+        }
+    }
+    //3. 定义数据库, entities即所有被@Entity声明的类，
+    //version即数据库版本，当数据库结构发生变化时，该版本应该要变化，并提供相应的迁移方法，否则无法兼容
+    @Database(entities = arrayOf(User::class), version = 1)
+    abstract class AppDatabase : RoomDatabase() {
+        //用以获取@Dao声明的对象
+        abstract fun userDao(): UserDao
+    }
+    //4. 调用，db应该是单例的
+    val db = Room.databaseBuilder(applicationContext,
+                //数据库类和数据库名称
+                AppDatabase::class.java, "database-name"
+            )
+            //添加版本迁移方法用以兼容，否则使用版本2数据库的应用打开版本1的数据时会报错
+            .addMigrations(Migration1to2())
+            .build()
+    //调用查询语句
+    db.userDao().getAll()
+    ```
     

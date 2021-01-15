@@ -21,6 +21,7 @@
 - [Hilt的使用](#hilt的使用)
 - [Startup使用](#startup使用)
 - [DataStore使用](#datastore使用)
+- [Paging3的使用](#paging3的使用)
 
 <!-- /code_chunk_output -->
 
@@ -35,6 +36,7 @@
 - 优点
     - ViewBinding简单好用, as原生支持, 创建或者更改xml都会自动编译更改且无感知, 点击类直接跳转xml文件
 - 缺点
+    - 功能简单
     - 所有类都需要编译后才能找到算是一个缺点
 
 ## DataBinding 
@@ -49,7 +51,7 @@
     - 带有`viewBinding`的功能，但必须要有`layout`标签
     - as原生支持，可与liveData配合使用
     - 绑定支持绑定表达式和自定义绑定适配器，也支持类的方法的使用，并不呆板，可以看作代码实现然后在xml进行调用
-    - 使用dataBinding可以省略很多模板代码
+    - 使用dataBinding可以省略很多模板代码，特别是在`RecyclerView`的`item`中
     - dataBinding比较灵活，可以简单使用单向绑定，也可以使用双向绑定，并不强制
 - 缺点：
     - 使用dataBinding会导致内容分离，即将数据显示视图的过程中一部分方法在activity中一部分在xml中，需要熟悉否则会对代码阅读产生障碍
@@ -69,7 +71,7 @@
 
 - 优点：
     - 默认无缓存，且只创建当前`Fragment`
-    - 能正确处理当`offscreenPageLimit`为1时的`fragment`的`onStart`和`onResume`的生命周期
+    - 能正确处理当无缓存时的`fragment`的`onStart`和`onResume`及对应的生命周期(当缓存多个时被缓存的`fragment`的`onStart`方法仍会在创建时调用)
     - 可以使用`RecyclerView`的`LayoutManger`来做转场动画
 
 ##  Navigation
@@ -92,11 +94,20 @@
 
 - 官方分页库
 
-- 官方文档：https://developer.android.google.cn/topic/libraries/architecture/paging?hl=zh_cn
-
+- 官方文档：
+    - https://developer.android.google.cn/topic/libraries/architecture/paging?hl=zh_cn
+    - https://developer.android.google.cn/topic/libraries/architecture/paging/v3-overview
 - 当前版本：2.1.2 / 3.0.0-alpha11
 - paging有两个版本，paging2是目前的稳定版本，但paging3重写了paging2，更改了paging2的结构和api，但目前仍处于alpha版本中，其使用kotlin语言，使用flow
 
+- 使用：[Paging3的使用](#paging3的使用)
+
+- 优点：
+    - 官方支持，有了rv的`refresh`、`retry`等api
+    - 与`room`、`RecyclerViewAdapter`配合好，特别是`room`的配合可以简化很多代码
+- 缺点：
+    - 与其它官方的`alpha`版本相比，`paging3`当前并不稳定，部分api未完成或者仍处于实验中
+    - 如果使用的数据库不支持paging的特性，则需要写代码去实现
 
 ## Hilt
 
@@ -113,7 +124,7 @@
 
 - 优点：
     - 解耦合
-    - 相较于`dagger2`，`hilt`难度不高，编写的样本代码很少
+    - 相较于`dagger2`，`hilt`难度很低，编写的样本代码很少
     - as支持注入跳转
 - 缺点：
     - 需要理解注入体系
@@ -212,7 +223,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
             <!--除了单纯的调用数据，dataBinding还支持调用数据源中的方法，
-            也支持一些绑定表达式，??即绑定表达式-->
+            也支持一些绑定表达式，??即表示为空时的绑定表达式-->
             <TextView
                 android:id="@+id/main_tv"
                 android:layout_width="wrap_content"
@@ -380,7 +391,10 @@
 
     }
     ```
-4. 注意点：hilt库最主要要注意的就是作用域，不同的作用域会生成不同的对象
+4. 注意点：
+    - hilt库最主要要注意的就是作用域，不同的作用域会生成不同的对象
+    - 如果一个类要使用hilt注入的变量，那么这个类必须可以被hilt依赖注入，否则应该使用构造传递
+    - 在模块化中，hilt会在编译时生成注入方法，因此在壳包必须可以访问所有依赖注入对象
 
 ## Startup使用
 1. 启用
@@ -395,7 +409,7 @@
         override fun create(context: Context) {
             //进行初始化
         }
-        //如果依赖其它初始任务，则返回其列表，startup会在依赖项目初始化只会再初始化本类
+        //如果依赖其它初始任务，则返回其列表，startup会在依赖项目初始化之后再初始化本类
         override fun dependencies(): MutableList<Class<out Initializer<*>>> {
             return mutableListOf()
         }
@@ -408,7 +422,7 @@
         android:authorities="${applicationId}.androidx-startup"
         android:exported="false"
         tools:node="merge">
-        <!--name需要更改为实现了Initializer的类，其余内容诸如authorities不可更改-->
+        <!--name需要更改为实现了Initializer的类-->
         <meta-data android:name="com.example.ExampleLoggerInitializer"
                 tools:node="remove" />
     </provider>
@@ -417,7 +431,7 @@
 
 ## DataStore使用
 1. 启用:
-    - datastore有两种版本，一种使用键值对，另一种使用`Proto`结构，这是一种诸如`xml`但与`xml`不同的结构，此处只实验了第一种版本
+    - datastore有两种版本，一种使用键值对，另一种使用`Proto`结构，这是一种诸如`xml`但与`xml`不同的结构，使用时需要定义架构而无法直接使用，此处只实验了第一种版本
     ```kotlin
     dependencies {
         implementation "androidx.datastore:datastore-preferences:1.0.0-alpha04"
@@ -427,14 +441,22 @@
     ```kotlin 
     //这是一个kt的拓展函数
     val dataStore = context.createDataStore("datastore_name")
+    //实际即
+    PreferenceDataStoreFactory.create(
+        corruptionHandler = null,
+        migrations = listOf(),
+        scope = CoroutineScope(Dispatchers.IO + SupervisorJob()) {
+        File(context.filesDir, "datastore/datastore_name.preferences_pb")
+    }
+
     ```
 3. 写入
-    - 写入是在子线程，且是在协程中
+    - 写入方法是在协程中
+    - 写入的线程由`DataStore`创建方法的`CoroutineScope`决定的，默认是在`IO`线程
     - 键值对的键是一个`Preferences.Key<T>`类型，可以用`preferencesKey(String)`方法生成
-    - `preferencesKey(String)`方法只支持`Int`、`String`、`Boolean`、`Float`、`Long`、`Double`类型
+    - `preferencesKey(String)`方法只支持`Int`、`String`、`Boolean`、`Float`、`Long`、`Double`类型作为`Preferences.Key<T>`的泛型
     ```kotlin
     dataStore.edit {
-        //子线程
         it[preferencesKey<Boolean>("isset")] = true
     }
     ```
@@ -447,3 +469,119 @@
         //获取到结果it
     }
     ```
+5. 默认存储的文件路径为`file/datastore/自定义名.preference_pb`
+
+## Paging3的使用
+1. 启用
+    ```kotlin
+    dependencies {
+        implementation "androidx.paging:paging-runtime:3.0.0-alpha11"
+    }
+    ```
+2. 架构
+    - 单一数据源
+    ![paging3 architecture1](https://developer.android.google.cn/topic/libraries/architecture/images/paging3-library-architecture.svg)
+    - 将数据库作为单一数据源，远程数据先更新数据库，再通过数据库的数据刷新页面
+    ![paging3 architecture2](https://developer.android.google.cn/topic/libraries/architecture/images/paging3-layered-architecture.svg)
+3. 使用
+    ```kotlin
+    //1. 实现PagingDataAdapter,相较于RecyclerView.Adapter，
+    //   PagingDataAdapter需要传入一个DiffUtil.ItemCallback用以比较数据
+    //   其余需要实现的部分是一致的
+    class RvAdapter :
+        PagingDataAdapter<User, BindViewModel>(object : DiffUtil.ItemCallback<User>() {
+            //用以判断两个参数是否一致
+            //可以根据业务逻辑判断，也可以根据hash值判断
+            override fun areItemsTheSame(oldItem: User, newItem: User): Boolean {
+                return oldItem.id == newItem.id
+            }
+            //判断内容是否一致，用以刷新显示
+            override fun areContentsTheSame(oldItem: User, newItem: User): Boolean {
+                return oldItem.name == newItem.name
+            }
+        }) {
+            ...
+        }
+    //2. 将PagingDataAdapter设置给rv
+    rv.adapter = RvAdapter()
+    //3. 获取一个PagingData类型的数据，然后传递给PagingDataAdapter
+    //   getAllUser()返回的是一个Pager<Int, User>类型，见下文
+    //   .flow是获取Pager内部维护的flow流，也是将Pager转为了flow，
+    //   在flow中可以获取数据源传递的PagingData
+    getAllUser()
+        .flow
+        .collect {
+            rvAdapter.submitData(this.lifecycle, it)
+        }
+    //4. 构建Pager
+    //a. 单一数据源，只从数据库或者只从服务器中获取数据
+    //RemoteMediator仍然是ExperimentalPagingApi，需要显式声明
+    @ExperimentalPagingApi
+    fun getAllUser(): Pager<Int, User> {
+        //自行构造一个Pager实例，initialKey是初始key值，即初始页码
+        return Pager(PagingConfig(pageSize = 20), initialKey = 0,
+            //定义数据源
+            pagingSourceFactory = {
+                //PagingSource<Int, User>两个泛型，第一个泛型即分页key，作为分页判断的依据，
+                //一般是int类型的页码，也可以是其它类型
+                //第二个泛型是数据类型
+                //这只是一种写法，事实上，room可以直接返回PagingSource类型的数据
+                return@Pager object : PagingSource<Int, User>() {
+                    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, User> {
+                        //页面加载的分页判断
+                        val page = params.key ?: 0
+                        //模拟从数据库或者服务器中获取数据
+                        val list = getListByPage(page)
+                        val mockError = false
+                        //模拟数据获取错误
+                        if (mockError) {
+                            return LoadResult.Error(Exception("获取数据失败"))
+                        }
+                        //获取到数据
+                        return LoadResult.Page(list, null, page + 1)
+                    }
+                }
+                //单一数据源，则无需设置此数据源
+            },remoteMediator = null)
+    }
+    //b. 双层数据源，pagingSourceFactory无效时才从remoteMediator中获取
+    @ExperimentalPagingApi
+    fun getAllUser(): Pager<Int, User> {
+        //自行构造一个Pager实例，initialKey是初始key值，即初始页码
+        return Pager(PagingConfig(pageSize = 20), initialKey = 0,
+            //room作为数据源
+            //room支持返回DataSource.Factory<Int, ArticleDto>类型，
+            //可以直接通过.asPagingSourceFactory()转换为pagingSourceFactory所需类型
+            pagingSourceFactory = roomDao.queryAllUser().asPagingSourceFactory(),
+            //定义分层数据源
+            //官方推荐的架构是pagingSourceFactory用数据库作为唯一数据源，当pagingSourceFactory没有数据时，会调用remoteMediator，
+            //此时remoteMediator获取服务器数据，然后写入数据库，再让pagingSourceFactory从数据库中读取
+            //要实现这种架构，需要作为pagingSourceFactory的数据库能处理数据失效的情形，
+            //自行构建的PagingSource是无效的，必须与数据库相关联
+            //如果pagingSourceFactory不处于无效状态，remoteMediator就不会被调用
+            //room可以自动处理，其它数据库可能需要参照实现去处理状态
+            remoteMediator = object : RemoteMediator<Int, User>() {
+                override suspend fun load(
+                    loadType: LoadType,
+                    state: PagingState<Int, User>
+                ): MediatorResult {
+                    //模拟数据获取错误
+                    val mockError = false
+                    if (mockError) {
+                        MediatorResult.Error(Exception("获取数据失败"))
+                    }
+                    //可以从参数中获取当前key
+                    val key = getKey(loedType,state)
+                    //从服务器中获取数据
+                    val list = api.getAllUser(key)
+                    //将数据更新到数据库
+                    ...
+                    //返回成功信号，让paging从数据库中去获取数据
+                    return MediatorResult.Success(false)
+                }
+            })
+    }
+    ```
+
+
+    

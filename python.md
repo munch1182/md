@@ -259,3 +259,52 @@
 |字典dict|可变|key不可重复,value可重复|无序|{key:value}|
 |元组tuple|不可变|可重复|有序|()|
 |集合set|可变|不可重复|无序|{}|
+
+## 上下文管理器
+- 上下文管理器主要用于自动调用关闭方法，即使发生异常也会调用关闭方法
+- 常用于打开文件，`open`函数返回的即是一个遵守上下文管理器协议的对象的实例
+    ```python
+    with open("","r") as file:
+        pass
+    ```
+- 你也可以用自己的类来完成上下文协议，用于自动关闭资源，只需要实现`__enter__()`,`__exit__()`两个方法
+    ```python
+    class Auto(object):
+        def __enter__(self):
+            pass
+        def __exit__(self):
+            pass
+    with Auto() as a:
+        pass
+    ```
+## os包
+
+### 常用属性
+- `name`: 返回操作系统的名称字符，windows只会返回`nt`，可以使用`getpass`模块的`getpass.getuser()`来获取当前用户名字符
+- `curdir`: 就是`.`
+- `pardir`: 就是`..`
+- `sep`:  分隔符`\\`，应该是根据系统自动选择
+- `extsep`: 文件拓展名分隔符
+- `linesep`: 换行符
+
+### 常用函数
+- `system(str)`: 在win下可以看作cmd命令
+- `startfile(path)`: 启动文件，填写可执行文件路径即可直接执行
+- `getcwd()`: 返回当前工作目录
+- `listdir(path)`: 返回指定路径下的文件和目录信息
+- `mkdir(path[,mode])`: 创建目录
+- `mkdirs(path[,mode])`: 创建多级目录
+- `rename(path[,mode],path[,mode])`: 更改文件
+- `rmdir(path)`: 删除目录
+- `removedirs(path)`: 删除多级目录
+- `chdir(path)`: 设置path为工作路径
+- `walk(path)`: 遍历文件目录及其子目录，返回一个walk对象
+
+### path模块
+- `abspath(paht)`: 用于获取文件或者目录的绝对路径
+- `exists(path)`: 判断文件是否存在
+- `join(path, name)`: 拼接目录与目录或者目录与文件路径
+- `splitext()`: 分类文件名和拓展名
+- `basename(path)`: 从一个路径中提取文件名
+- `dirname(path)`: 从一个路径中提取路径
+- `isDir(path)`: 判断是否为dir

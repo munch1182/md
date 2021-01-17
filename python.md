@@ -7,6 +7,11 @@
 - [python基础](#python基础)
 - [Python内置函数](#python内置函数)
 - [Python的数据结构](#python的数据结构)
+- [上下文管理器](#上下文管理器)
+- [os包](#os包)
+  - [常用属性及对应win下符号](#常用属性及对应win下符号)
+  - [常用函数](#常用函数)
+  - [path模块](#path模块)
 
 <!-- /code_chunk_output -->
 
@@ -198,7 +203,7 @@
 - `char` : 获取获取原始值对应的字符
 - `dir` : 查看类的属性和方法列表
 - `len` : 获取内容长度
-##  Python的数据结构
+## Python的数据结构
 
 - 列表：`[val1,val2,val3]`,`list([val1,val2,val3])`,也可以使用列表生成式生成,python的列表不受类型的限制,无需存储同一类型,正向索引0到N-1,逆向索引-N到-1,对list切片步长为负数时,会以从后往前的顺序
     ```python {cmd=true}
@@ -256,15 +261,16 @@
 |数据结构|是否可变|是否可重复|是否有序|定义符号|
 | --- | --- | --- | --- | :---: |
 |列表list|可变|可重复|有序|[]|
-|字典dict|可变|key不可重复,value可重复|无序|{key:value}|
+|字典dict|可变|key不可重复,value可重复|无序*|{key:value}|
 |元组tuple|不可变|可重复|有序|()|
 |集合set|可变|不可重复|无序|{}|
+字典在`python3.6`之后变得有序
 
 ## 上下文管理器
 - 上下文管理器主要用于自动调用关闭方法，即使发生异常也会调用关闭方法
 - 常用于打开文件，`open`函数返回的即是一个遵守上下文管理器协议的对象的实例
     ```python
-    with open("","r") as file:
+    with open("path","r") as file:
         pass
     ```
 - 你也可以用自己的类来完成上下文协议，用于自动关闭资源，只需要实现`__enter__()`,`__exit__()`两个方法
@@ -274,21 +280,24 @@
             pass
         def __exit__(self):
             pass
+    #使用
     with Auto() as a:
         pass
     ```
 ## os包
 
-### 常用属性
+### 常用属性及对应win下符号
 - `name`: 返回操作系统的名称字符，windows只会返回`nt`，可以使用`getpass`模块的`getpass.getuser()`来获取当前用户名字符
-- `curdir`: 就是`.`
-- `pardir`: 就是`..`
-- `sep`:  分隔符`\\`，应该是根据系统自动选择
-- `extsep`: 文件拓展名分隔符
-- `linesep`: 换行符
+- `curdir`: `.`
+- `pardir`: `..`
+- `sep`:  分隔符`\\`
+- `extsep`: 文件拓展名分隔符`.`
+- `linesep`: 换行符`\r\n`
+- `pathse`: `;`
 
 ### 常用函数
-- `system(str)`: 在win下可以看作cmd命令
+- `system(str)`: 运行shell命令，在win下可以视作cmd命令
+- `popen(str)`: 运行shell命令并获取返回值
 - `startfile(path)`: 启动文件，填写可执行文件路径即可直接执行
 - `getcwd()`: 返回当前工作目录
 - `listdir(path)`: 返回指定路径下的文件和目录信息
@@ -308,3 +317,4 @@
 - `basename(path)`: 从一个路径中提取文件名
 - `dirname(path)`: 从一个路径中提取路径
 - `isDir(path)`: 判断是否为dir
+- `splitext`: 分离全路径下的后缀名

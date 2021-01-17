@@ -33,7 +33,9 @@
 - 使用：[ViewBinding使用](#Viewbinding使用)
 
 - 优点
-    - ViewBinding简单好用, as原生支持, 创建或者更改xml都会自动编译更改且无感知, 点击类直接跳转xml文件
+    - ViewBinding简单好用, as原生支持, 创建或者更改xml都会自动编译更改且无感知
+- 缺点
+    - 对应的类是生成的而且依赖文件名，如果更改xml文件名需要手动更改生成类的依赖
 
 ## DataBinding 
 
@@ -68,7 +70,7 @@
 - 优点：
     - 默认无缓存，且只创建当前`Fragment`
     - 能正确处理当无缓存时的`fragment`的`onStart`和`onResume`及对应的生命周期(当缓存多个时被缓存的`fragment`的`onStart`方法仍会在创建时调用)
-    - 可以使用`RecyclerView`的`LayoutManger`来做转场动画
+    - 基于`recyclerView`可以使用其特性，比如利用`LayoutManger`来做转场动画或者用`ItemDecoration`来绘制背景
 
 ##  Navigation
 
@@ -119,11 +121,12 @@
 - 优点：
     - 官方支持，基于sqlite，无需额外引入，打包不会增加额外的大小
     - 自行书写sql语句，可以书写诸如多表内联查询这种语句，更加自由灵活
-    - as支持表名提示，字段提示，错误检查，也支持数据库直接查看和语句测试
+    - as支持表名提示，字段提示，错误检查，也支持数据库直接查看和语句测试，比较方便
     - 与其它jetpack组件联系紧密，比如`paging`
 - 缺点：
+    - 需要手写sql语句，需要自行处理数据库关联，需要相关知识
     - 速度偏慢，虽然用户感知差异较小，但对比其它数据库速度仍有差距
-    - 需要自行完成版本管理，进行升级和降级，特别是在sqlite没有删除列指令的情况下
+    - 需要自行完成版本管理，进行升级和降级，特别是在sqlite没有删除列指令的情况下降级比较繁琐
 
 ## Hilt
 
@@ -189,7 +192,7 @@
 2. 使用
     - ViewBinding会在创建`layout`文件后编译一个以文件名开头，以Binding结尾的类，使用该类即可调用所有有id的控件
         ```kotlin
-        //ActivityMainBinding即R.layout.activity_main的bing类
+        //ActivityMainBinding即R.layout.activity_main的bind类
         //因为ActivityMainBinding是根据layout文件生成的，因此无需声明xml路径
         val binding = ActivityMainBinding.inflate(LayoutInflater.from(this))
         //binding.root即inflate的view对象
@@ -215,14 +218,15 @@
         }
     }
     ```
-2. xml布局需要被`layout`标签包裹，同时使用`<data>`标签来声明数据源  
+2. xml布局需要被`layout`标签包裹，同时使用`<data>`标签来声明要使用的类
+(如果是在`dataBinding`中单纯使用`viewBinding`的功能需要去掉`<data>`标签)
 (在as里，xml文件中选择xml文档声明行或者最外部标签，快捷键`alt+enter`选择`convert to binding layout`即可自动生成结构)
     ```xml
     <?xml version="1.0" encoding="utf-8"?>
     <layout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto">
         <data>
-            <!--声明的数据源，可以有多个，每一个都要这样声明-->
+            <!--声明的类，可以有多个，每一个都要这样声明-->
             <!--name是自定义别名-->
             <!--type指向实际的类，as支持路径提示-->
             <!--要实际支持双向绑定，要绑定的数据必须是一个可观察性质的数据，
@@ -232,6 +236,7 @@
                 name="viewmodel"
                 type="com.yunfeng.testlib.MainViewModel" />
         </data>
+        <!--原本的视图结构-->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -299,7 +304,7 @@
         implementation "androidx.viewpager2:viewpager2:1.0.0"
     }
     ```
-2. 继承`FragmentStateAdapter`并实现`createFragment()`和`getItemCount`再将该adapter通过viewPager2的setAdapter设置即可
+2. 实现`FragmentStateAdapter`再将该adapter通过viewPager2的setAdapter设置即可
 
 ## Hilt的使用
 1. 启用
@@ -336,7 +341,7 @@
     //用于提供一些注解对象的生成，主要是第三方的对象，需要使用@Module
     //如果无需这些对象则无需这样实现
     //@InstallIn()表明作用域，即在该作用域下这些注解可以这样生成
-    //SingletonComponent::class是hilt的类，表明作用域为全局单例
+    //SingletonComponent::class是hilt的类，表明类里的方法的作用域为全局单例
     @Module
     @InstallIn(SingletonComponent::class)
     object SingletonModule {
@@ -532,10 +537,10 @@
         }
     //4. 构建Pager
     //a. 单一数据源，只从数据库或者只从服务器中获取数据
-    //RemoteMediator仍然是ExperimentalPagingApi，需要显式声明
-    @ExperimentalPagingApi
     fun getAllUser(): Pager<Int, User> {
-        //自行构造一个Pager实例，initialKey是初始key值，即初始页码
+        //自行构造一个Pager实例
+        //pageSize是每页数量，initialKey是初始key值，即初始页码
+        //PagingConfig主要用来设置页面相关，包括当滑动到倒数第几个就开始加载更多等属性
         return Pager(PagingConfig(pageSize = 20), initialKey = 0,
             //定义数据源
             pagingSourceFactory = {
@@ -562,11 +567,10 @@
             }, remoteMediator = null)
     }
     //b. 双层数据源，pagingSourceFactory无效时才从remoteMediator中获取
+    //remoteMediator仍是实验性api，需要显示声明
     @ExperimentalPagingApi
     fun getAllUser(): Pager<Int, User> {
-        //自行构造一个Pager实例，
-        //pageSize是每页数量，initialKey是初始key值，即初始页码
-        //PagingConfig主要用来设置页面相关，包括当滑动到倒数第几个就开始加载更多等属性
+        //自行构造一个Pager实例
         return Pager(PagingConfig(pageSize = 20), initialKey = 0,
             //room作为数据源
             //room支持返回DataSource.Factory<Int, ArticleDto>类型，
@@ -576,14 +580,11 @@
             //官方推荐的架构是pagingSourceFactory用数据库作为唯一数据源，当pagingSourceFactory没有数据时，会调用remoteMediator，
             //此时remoteMediator获取服务器数据，然后写入数据库，再让pagingSourceFactory从数据库中读取
             //要实现这种架构，需要作为pagingSourceFactory的数据库能处理数据失效的情形，
-            //自行构建的PagingSource是无法处理的，必须与数据库相关联
+            //自行简单构建的PagingSource是无法处理的，必须与数据库相关联
             //如果pagingSourceFactory不处于无效状态，remoteMediator就不会被调用
             //room可以自动处理，其它数据库可能需要参照实现去处理状态
             remoteMediator = object : RemoteMediator<Int, User>() {
-                override suspend fun load(
-                    loadType: LoadType,
-                    state: PagingState<Int, User>
-                ): MediatorResult {
+                override suspend fun load(loadType: LoadType,state: PagingState<Int, User>): MediatorResult {
                     //模拟数据获取错误
                     val mockError = false
                     if (mockError) {
@@ -595,11 +596,11 @@
                     val list = api.getAllUser(key)
                     //判断是否还有更多数据
                     val hasMore = judgeHasMore(key,list)
-                    //将数据更新到数据库
+                    //判断并将数据更新到数据库
                     ...
                     //返回成功信号，让paging从数据库中去获取数据，
                     //endOfPaginationReached用以判断是否还有更多数据
-                    return MediatorResult.Success(endOfPaginationReached=hasMore)
+                    return MediatorResult.Success(endOfPaginationReached = hasMore)
                 }
             })
     }
@@ -638,7 +639,7 @@
     ){
         //忽略的属性，不会被存进数据库
         @Ignore
-        var list:String? = null
+        var str:String? = null
     }
     //2. 定义Dao，需要使用@Dao注解，用以调用sql语句
     @Dao
@@ -692,6 +693,6 @@
             .addMigrations(Migration1to2())
             .build()
     //调用查询语句
-    db.userDao().getAll()
+    val user : List<User> = db.userDao().getAll()
     ```
     

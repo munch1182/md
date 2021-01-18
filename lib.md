@@ -1,4 +1,4 @@
-# 技术
+# 库
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=2 depthTo=3 orderedList=false} -->
 
@@ -30,12 +30,12 @@
 
 - 官方文档：https://developer.android.google.cn/topic/libraries/view-binding?hl=zh_cn
 
-- 使用：[ViewBinding使用](#Viewbinding使用)
+- 使用：[ViewBinding使用](#viewbinding使用)
 
 - 优点
     - ViewBinding简单好用, as原生支持, 创建或者更改xml都会自动编译更改且无感知
 - 缺点
-    - 对应的类是生成的而且依赖文件名，如果更改xml文件名需要手动更改生成类的依赖
+    - 对应的binding类是生成的而且依赖文件名，如果更改xml文件名需要手动更改生成类的依赖
 
 ## DataBinding 
 
@@ -43,7 +43,7 @@
 
 - 官方文档：https://developer.android.google.cn/topic/libraries/data-binding?hl=zh_cn
 
-- 使用：[DataBinding使用](#DataBinding使用)
+- 使用：[DataBinding使用](#databinding使用)
 
 - 优点：
     - 带有`viewBinding`的功能，但必须要有`layout`标签
@@ -52,6 +52,7 @@
     - 使用dataBinding可以省略很多模板代码，特别是在`RecyclerView`的`item`中
     - dataBinding比较灵活，可以简单使用单向绑定，也可以使用双向绑定，并不强制
 - 缺点：
+    - 对应的binding类是生成的而且依赖文件名，如果更改xml文件名需要手动更改生成类的依赖
     - 使用dataBinding会导致内容分离，即将数据显示视图的过程中一部分方法在activity中一部分在xml中，需要熟悉否则会对代码阅读产生障碍
     - dataBinding完全使用有一定门槛
     - dataBinding写在xml中，当前版本虽然支持对错误的提示但是并不及代码中的错误提示智能
@@ -65,7 +66,7 @@
 
 - 当前版本：1.0.0
 
-- 使用：[ViewPager2使用](#ViewPager2使用)
+- 使用：[ViewPager2使用](#viewpager2使用)
 
 - 优点：
     - 默认无缓存，且只创建当前`Fragment`
@@ -139,7 +140,7 @@
 
 - 当前版本：2.30-alpha
 
-- 使用：[Hilt的使用](#Hilt的使用)
+- 使用：[Hilt的使用](#hilt的使用)
 
 - 优点：
     - 解耦合
@@ -158,7 +159,7 @@
 
 - 当前版本: 1.0.0
 
-- 使用： [Startup使用](#Startup使用)
+- 使用： [Startup使用](#startup使用)
 
 ## DataStore
 
@@ -167,14 +168,12 @@
 - 官方文档: https://developer.android.google.cn/topic/libraries/architecture/datastore#preferences-datastore
 
 - 当前版本：1.0.0-alpha04
-
 - 使用： [DataStore使用](#DataStore使用)
 
 - 优点：
     - 避免了`SharedPreferences`的漏洞，诸如阻塞线程，有造成anr的风险等问题
 - 缺点：
-    - 需要熟悉协程，因为它的写入是在协程中进行
-    - 需要熟悉`flow`，因为其返回值是一个`flow`对象
+    - 其返回值是一个`flow`对象，不如sp方便，虽然这是必须的
 
 ---
 

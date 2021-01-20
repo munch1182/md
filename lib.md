@@ -112,7 +112,7 @@
 
 ## Room
 
-- 官方基于SQLite的数据库
+- 官方基于SQLite的数据库，是`SQLiteOpenHelper`基于注解的封装版本
 
 - 官方文档: https://developer.android.google.cn/topic/libraries/architecture/room
 - 当前版本: 2.2.5
@@ -123,7 +123,7 @@
     - 官方支持，基于sqlite，无需额外引入，打包不会增加额外的大小
     - 自行书写sql语句，可以书写诸如多表内联查询这种语句，更加自由灵活
     - as支持表名提示，字段提示，错误检查，也支持数据库直接查看和语句测试，比较方便
-    - 与其它jetpack组件联系紧密，比如`paging`
+    - 查询支持多种返回值，与其它jetpack组件联系紧密，比如`paging`
 - 缺点：
     - 需要手写sql语句，需要自行处理数据库关联，需要相关知识
     - 速度偏慢，虽然用户感知差异较小，但对比其它数据库速度仍有差距
@@ -662,9 +662,8 @@
         @Insert
         suspend fun insertAll(vararg users: User)
 
-        //更新方法
-        @Query("UPDATE $TB_NAME_USER SET `first_name` = :firstName WHERE `uid` = :uid")
-        suspend fun updateFirstName(uid:Int, firstName:String)
+        @UPDATE(entity = User::class)
+        suspend fun update(vararg user: User)
 
         @Delete
         fun delete(user: User)
@@ -683,7 +682,7 @@
         //用以获取@Dao声明的对象
         abstract fun userDao(): UserDao
     }
-    //4. 调用，db应该是单例的
+    //4. 生成数据库对象，db应该是单例的
     val db = Room.databaseBuilder(applicationContext,
                 //数据库类和数据库名称
                 AppDatabase::class.java, "database-name"
@@ -691,7 +690,7 @@
             //添加版本迁移方法用以兼容，否则使用版本2数据库的应用打开版本1的数据时会报错
             .addMigrations(Migration1to2())
             .build()
-    //调用查询语句
+    //5. 调用，查询语句
     val user : List<User> = db.userDao().getAll()
     ```
     

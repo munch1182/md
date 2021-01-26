@@ -180,6 +180,7 @@
 
 ## ViewBinding使用
 
+- [ViewBinding](#viewbinding)
 1. 启用: 在`build.gradle`文件中设置
     ```kotlin
     android {
@@ -229,7 +230,10 @@
         }
         ```
     - 如果不需要生成Binging类，则需要在xml文件中最外层的标签内添加`tools:viewBindingIgnore="true"`
+
 ## DataBinding使用
+
+- [DataBinding](#databinding)
 1. 启用: 在`build.gradle`文件中设置
     ```kotlin
     android {
@@ -320,6 +324,8 @@
     ```
 
 ## ViewPager2使用
+
+- [ViewPager2](#viewpager2)
 1. 启用
     ```kotlin
     dependencies {
@@ -329,6 +335,7 @@
 2. 实现`FragmentStateAdapter`再将该adapter通过viewPager2的setAdapter设置即可
 
 ## Hilt的使用
+- [Hilt](#hilt)
 1. 启用
     ```kotlin
     buildscript {
@@ -450,6 +457,8 @@
     - 在组件化中，hilt会在编译时生成注入方法，因此在壳包必须可以访问所有依赖注入对象
 
 ## Startup使用
+
+- [AppStartup](#appstartup)
 1. 启用
     ```kotlin
     dependencies {
@@ -483,6 +492,8 @@
 4. 注意：此类先于application执行，因此只适合不依赖application的初始化
 
 ## DataStore使用
+
+- [DataStore](#datastore)
 1. 启用:
     - datastore有两种版本，一种使用键值对，另一种使用`Proto`结构，这是一种诸如`xml`但与`xml`不同的结构，使用时需要定义架构而无法直接使用，此处只实验了第一种版本
     ```kotlin
@@ -525,6 +536,8 @@
 5. 默认存储的文件路径为`file/datastore/自定义名.preference_pb`
 
 ## Paging3的使用
+
+- [Paging](#paging)
 1. 启用
     ```kotlin
     dependencies {
@@ -642,6 +655,8 @@
     ```
 
 ## Room的使用
+
+- [Room](#room)
 1. 启用
     ```kotlin
     kapt {

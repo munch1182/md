@@ -74,8 +74,12 @@
         <!-- @import "[TOC]" {cmd="toc" depthFrom=2 depthTo=3 orderedList=false} -->
         ```
         也可以直接使用`[TOC]`
+    - 导出
+        - 导出pdf效果最好的仍然是`Chrome`，因为其保留了代码块效果
+        - pandoc可以转换多种格式，但是在没有模板的情况下效果并不好
     - 参考
         - [在 VSCode 下用 Markdown Preview Enhanced 愉快地写文档](https://zhuanlan.zhihu.com/p/56699805)
+        - [vscode markdown preview enhance 插件 pdf 导出](https://blog.csdn.net/m0_37639589/article/details/91349425)
 
 - 一些markdown语法:
     - 上标 2^3^=8 `2^3^=8`

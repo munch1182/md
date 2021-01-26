@@ -17,7 +17,7 @@
         ```java
         //总开关
         //写成方法可以避免as的简化提示
-        static def runAlone() {
+        static def isApp() {
             return false
         }
 
@@ -30,9 +30,9 @@
             ]
         }
 
-        //每个组件是否单独编译的开关的判断，先判断总开关，在判断单独设置
-        static def componentRunAlone(isApp) {
-            return !runAlone() && isApp
+        //每个组件是否单独编译的开关的判断，先判断总开关，再判断单独设置
+        static def componentRunAlone(runAlone) {
+            return !isApp() && runAlone
         }
     - 第二种方法需要声明文件引入，在项目的`build.gradle`顶行加入
         ```java
@@ -54,6 +54,7 @@
     - `lib1`、`lib2`是其它被提取的功能组件，各组件按需依赖
     - `component`则是根据业务被划分的组件
 3. **为组件添加开关判断**
+    - 组件在分开开发时是一个app，而在组合应用时是一个lib，因此需要判断
     - 如果开关设置在`gradle.properties`文件中，则在各组件的`build.gradle`文件中替换`apply plugin: 'com.android.application'`为
         ```java
         if (runAlone.toBoolean()) {
@@ -86,28 +87,34 @@
                 implementation project(path: ':component2')
             }
         ```
-    - as当前的插件声明变成了
+    - 其它：as当前的插件声明变成了
         ```java
         plugins {
             id 'com.android.application'
             id 'kotlin-android'
         }
         ```
-        等价于
+        其实等价于
         ```java
         apply plugin: 'com.android.application'
         apply plugin: 'kotlin-android'
         ```
 4. **解决`AndroidManifest`冲突**
-    - 解决每个组件拥有`Application`和`launchActivity`与`app`包的冲突
+    - 每个组件作为app开发时需要`Application`和`launchActivity`，而作为lib时这些会与`app`包的起冲突
     - 解决办法：组件单独开发时单独指定一个`AndroidManifest`文件
         1. 在`main`目录下新建`component`文件夹(目录和文件夹名应自行决定，这里只是举例)
         2. 将项目的`AndroidManifest`文件复制到`component`文件夹下
-        3. 删除模块的原`AndroidManifest`文件中`application`的标签属性，只保留标签
-        4. 删除模块的原`AndroidManifest`文件中的`Activity`的带有`Launcher`的`intent-filter`
-        5. 在模块的`build.gradle`文件中指定`component`及其`AndroidManifest`文件
+        3. 删除组件的原`AndroidManifest`文件中`application`的标签属性，只保留标签
+        4. 删除组件的原`AndroidManifest`文件中的`Activity`的带有`Launcher`的`intent-filter`
+        5. 在组件的`build.gradle`文件中指定`component`及其`AndroidManifest`文件，并删掉`applicationId`
             ```java
             android {
+                defaultConfig {
+                    ...
+                    //删掉组件的applicationId
+                    /*applicationId "..."*/
+                    ...
+                }
                 sourceSets {
                     main {
                         //runAlone即开关判断
@@ -154,7 +161,7 @@
             ```
     - 注意事项：
         - 作为单独开发时的`application`，其在最后打包时是被排除的，其中的代码也不会执行，因此写代码的时候，要么将代码写在`common`的`CommonApplicaiton`中，此`application`继承即会调用，要么复制代码到`app`的`application`中
-        - 此方法同样适用于一些为单独开发指定的文件，但是注意，这些文件最终打包都不会被编译进包内
+        - 此方法同样适用于一些为单独开发指定的文件，但是注意，这些文件如果被排除则最终打包都不会被编译进包内
 7. **组件间的调用和通信**
     - 这里使用的是`ARouter`
     - 官方文档：https://github.com/alibaba/ARouter/tree/master
@@ -221,9 +228,11 @@
             ```kotlin
             @Route(path = "/yourservicegroupname/hello", name = "测试服务")
             class MyProviderImpl : MyProvider {
+
+                var a = 2
                 
-                @Override fun getSome(flag:String): Int {
-                    return 1
+                @Override fun getSome(flag:Int): Int {
+                    return a + flag
                 }
             }
             ```
@@ -232,7 +241,7 @@
             class Test {
                 
                 //这只是一种写法，更多写法见官方文档
-                //ARouter的自动注入在kotlin中必须使用@JvmField使其编译后的java字段为public，否则会报错
+                //ARouter的自动注入在kt中必须使用@JvmField使其编译后的java字段为public，否则无法写入
                 @Autowired
                 @JvmField
                 var myProvider : MyProvider? = null;
@@ -249,7 +258,7 @@
             }
             ```
     - 注意：
-        - 如果`build.gradle`中已经有`arguments`参数，则应该这样添加
+        - 在kapt中如果`build.gradle`中已经有`arguments`参数，则应该这样添加
             ```java
             kapt {
                 arguments {
@@ -266,7 +275,7 @@
             ```
             特别是`openDebug()`来关闭缓存，并且应该在`ARouter.init(this)`之前
 8. 注意事项
-    - 依赖：`common`模块作为全局通用依赖，应该存放共有的业务逻辑，如`BaseApplication`，存放资源文件，所有模块都使用的第三方依赖，底层的基本业务逻辑等带有全局性的东西，除此之外的东西，应该放入自己的组件中，这也是组件化能够减少组件编译时间的原因
+    - 依赖：`common`模块作为全局通用依赖，应该存放共有的业务逻辑，如`BaseApplication`，存放资源文件，所有模块都使用的第三方依赖，底层的基本业务逻辑等带有全局性的东西，除此之外的东西，应该放入自己的组件中，这也是组件化能够减少组件编译时间的原因之一
     - 注册：组件化开发需要两套`AndroidManifest.xml`，因此在其中编写代码时需要复制一份并注意其中的差别 
     - 初始化：如果某个模块根据业务需要在app里执行初始化任务，可以考虑根据`ARouter`声明初始化服务并在`app`的`application`中执行，也可以直接在`app`的`application`中直接强引用并初始化
     - 命名：因为是隔离开发，在最终合并时可能会出现资源文件名重复的冲突，因此建议图片资源放入`common` 文件夹中，建议在各组件的`build.gradle`文件中使用

@@ -81,6 +81,7 @@
 - 官方文档：https://developer.android.google.cn/guide/navigation
 
 - 当前版本：2.3.2
+- 使用：参见官方文档
 
 - 优点：
     - as原生支持，且支持视图式编程，跳转结构清晰明了
@@ -97,7 +98,7 @@
     - https://developer.android.google.cn/topic/libraries/architecture/paging?hl=zh_cn
     - https://developer.android.google.cn/topic/libraries/architecture/paging/v3-overview
 - 当前版本：2.1.2 / 3.0.0-alpha11
-- paging有两个版本，paging2是目前的稳定版本，但paging3重写了paging2，更改了paging2的结构和api，但目前仍处于alpha版本中，其使用kotlin语言，使用flow
+- paging有两个版本，paging2是目前的稳定版本，paging3重写了paging2，更改了paging2的结构和api，但目前仍处于alpha版本中，其使用kotlin语言，使用flow
 
 - 使用：[Paging3的使用](#paging3的使用)
 
@@ -108,11 +109,11 @@
     - 可以以比较少的代码实现带数据库缓存的分页，对于这类需求帮助很大
 - 缺点：
     - 与其它官方的`alpha`版本相比，`paging3`当前并不稳定，部分api仍处于实验中
-    - 如果要使用数据库缓存，而使用的数据库不支持`paging`的特性，则需要自行写代码去实现
+    - 如果要使用数据库缓存，而使用的数据库不支持`paging`的特性，则需要自行写代码去实现(`objectbox`支持paging)
 
 ## Room
 
-- 官方基于SQLite的数据库，是`SQLiteOpenHelper`基于注解的封装版本
+- 官方基于SQLite的数据库，可以看作是`SQLiteOpenHelper`基于注解的封装版本
 
 - 官方文档: https://developer.android.google.cn/topic/libraries/architecture/room
 - 当前版本: 2.2.5
@@ -190,8 +191,29 @@
     ```
 2. 使用
     - ViewBinding会在创建`layout`文件后编译一个以文件名开头，以Binding结尾的类，使用该类即可调用所有有id的控件
+        ```xml
+        <!-- activity_main 正常书写 -->
+        <FrameLayout
+            ...>
+
+            <TextView
+                android:id="main_tv"
+                ...>
+            <TextView
+                android:id="main_tv1"
+                ...>
+            <TextView
+                android:id="main_tv2"
+                ...>
+            <TextView
+                android:id="main_tv3"
+                ...>
+        
+        </FrameLayout>
+        ```
         ```kotlin
-        //ActivityMainBinding即R.layout.activity_main的bind类
+        //viewbind的使用：
+        //ActivityMainBinding即R.layout.activity_main自动生成的bind类
         //因为ActivityMainBinding是根据layout文件生成的，因此无需声明xml路径
         val binding = ActivityMainBinding.inflate(LayoutInflater.from(this))
         //binding.root即inflate的view对象
@@ -266,6 +288,7 @@
     ```     
     自定义绑定适配器，可以写在一个文件中，as会自动编译并调用
     ```kotlin
+    //需要BindingAdapter注解声明，"avatar"是自定义名称
     //两个参数分别是调用的控件和绑定的数据类型
     @BindingAdapter("avatar")
     fun loadAvatar(imageView: ImageView, any: Any?) {
@@ -280,12 +303,12 @@
     private val model by lazy { ViewModelProvider(this).get(MainViewModel::class.java) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        //此处也可以按照viewBinding的写法
+        //此处也可以按照viewBinding的写法，但建议使用DataBindingUtil
         val binding: ActivityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         binding.run {
-            //绑定生命周期
+            //绑定生命周期，此方法是ViewDataBinding的方法
             lifecycleOwner = this@MainActivity
-            //绑定声明的数据源即可将数据显示到页面中
+            //绑定声明的数据源即可将数据显示到页面中，viewmodel是自定义的别名
             //更改model中的user即可自动更改页面显示
             viewmodel = model
         }
@@ -333,9 +356,18 @@
         kapt 'androidx.hilt:hilt-compiler:1.0.0-alpha02'
     }
     ```
-2. 入口：自定义app类添加注解`@HiltAndroidApp`并在xml中声明app类，这一步是必须的，这是hilt的入口
+2. 入口：自定义app类添加注解`@HiltAndroidApp`并在xml中注册app类，这一步是必须的，这是hilt的入口
+    ```kotlin
+    class App : Application
+    ```
+    ```xml
+    <application
+        android:name=".App"
+        ...
+    ```
 3. 使用：
     ```kotlin
+    //1. 声明(可选)
     //SingletonModule是一个自定义类
     //用于提供一些注解对象的生成，主要是第三方的对象，需要使用@Module
     //如果无需这些对象则无需这样实现
@@ -345,9 +377,9 @@
     @InstallIn(SingletonComponent::class)
     object SingletonModule {
 
-        //当在该作用域下使用一个Retrofit的依赖注入对象时，hilt会从此处生成一个Retrofit对象
+        //当在该作用域下使用一个Retrofit的依赖注入对象时，hilt会从此处生成一个Retrofit对象，如果已生成则会直接使用
         //当然如果是单例的只会生成一次
-        //提供注解对象需要使用@Provides
+        //提供注解对象需要使用注解@Provides
         //此方法为自定义方法，返回值即表明提供的注解对象，此处为Retrofit
         //参数是所需要的参数，如果该注解需要参数，那么该参数也必须可以依赖注入生成，见provideOkHttpClient方法
         @Provides
@@ -367,6 +399,7 @@
         @Provides
         fun provideApi(retrofit: Retrofit): Api = retrofit.create(Api::class.java)
     }
+    //2. 使用
     //@Inject注解构造即告诉hilt当需要一个新的TestRepository对象时需要怎样生成
     //类似于@Provides但是被简化了，也可以以类似 @Provides的方式提供
     //同样的，如果有参数，则参数也必须可以提供依赖注入对象
@@ -380,7 +413,7 @@
         lateinit var api: Api
 
         //依赖注入是根据对象类型生成的
-        //如果一个类的依赖注入的作用域非单例的(非全局单例或者作用域里非单例)
+        //如果一个类的依赖注入的作用域非单例的(非全局单例或者作用域里非唯一)
         //那么注入一次，即会调用注入方法(构造函数或者@Provides)一次
         //此处因为Api是单例注入的，所以api和api2是相同对象，否则，会是两个不同对象
         @Inject
@@ -393,14 +426,15 @@
             api.search()
         }
     }
-
+    //3. ViewModelInject
     //ViewModelInject是hilt-lifecycle-viewmodel库的注解
-    //如果不引入这个库则需要使用@ActivityRetainedScoped注明在activity生命周期内保持单一，并使用@Inject提供构造
+    //如果不引入这个库则需要使用@ActivityRetainedScoped注明在activity生命周期内保持唯一，并使用@Inject提供生成方式
+    //此处ArticleRepository会被自动注入对象
     class TestJetpackViewModel @ViewModelInject constructor(
         private val repository: ArticleRepository) :ViewModel() {
 
     }
-
+    //4. AndroidEntryPoint
     //如果要在Activity中使用依赖注入则@AndroidEntryPoint是必须的声明，这是hilt的入口之一
     @AndroidEntryPoint
     class TestJetpackActivity : AppCompatActivity() {
@@ -413,7 +447,7 @@
 4. 注意点：
     - hilt库最主要要注意的就是作用域，不同的作用域会生成不同的对象
     - 如果一个类要使用hilt注入的变量，那么这个类必须可以被hilt依赖注入，否则应该使用构造传递
-    - 在模块化中，hilt会在编译时生成注入方法，因此在壳包必须可以访问所有依赖注入对象
+    - 在组件化中，hilt会在编译时生成注入方法，因此在壳包必须可以访问所有依赖注入对象
 
 ## Startup使用
 1. 启用
@@ -505,7 +539,8 @@
     - 单一数据源适合简单或者页面数据要求准确或者有时效性，而数据库作为缓存的架构适合展示类且变化不大的页面
 3. 使用
     ```kotlin
-    //1. 实现PagingDataAdapter,相较于RecyclerView.Adapter，
+    //1. 实现PagingDataAdapter
+    //   相较于RecyclerView.Adapter，
     //   PagingDataAdapter需要传入一个DiffUtil.ItemCallback用以比较数据
     //   其余需要实现的部分是一致的
     class RvAdapter :
@@ -523,7 +558,8 @@
             ...
         }
     //2. 将PagingDataAdapter设置给rv
-    rv.adapter = RvAdapter()
+    val rvAdapter = RvAdapter()
+    rv.adapter = rvAdapter
     //3. 获取一个PagingData类型的数据，然后传递给PagingDataAdapter
     //   getAllUser()返回的是一个Pager<Int, User>类型，见下文
     //   .flow是获取Pager内部维护的flow流，也是将Pager转为了flow，
@@ -590,7 +626,7 @@
                         MediatorResult.Error(Exception("获取数据失败"))
                     }
                     //可以从参数中获取当前key
-                    val key = getKey(loedType,state)
+                    val key = getKey(loedType, state)
                     //从服务器中获取数据
                     val list = api.getAllUser(key)
                     //判断是否还有更多数据
@@ -640,7 +676,7 @@
         @Ignore
         var str:String? = null
     }
-    //2. 定义Dao，需要使用@Dao注解，用以调用sql语句
+    //2. 定义Dao，需要使用@Dao注解，用以实现并调用sql语句
     @Dao
     interface UserDao {
         //查询语句，room支持多种返回值，也可以加拓展库去支持更多的返回值类型
@@ -676,7 +712,7 @@
         }
     }
     //3. 定义数据库, entities即所有被@Entity声明的类，
-    //version即数据库版本，当数据库结构发生变化时，该版本应该要变化，并提供相应的迁移方法，否则无法兼容
+    //version即数据库版本，当数据库结构发生变化时(比如增删参数，更改参数名等)，该版本应该要变化，并提供相应的迁移方法，否则无法兼容
     @Database(entities = arrayOf(User::class), version = 1)
     abstract class AppDatabase : RoomDatabase() {
         //用以获取@Dao声明的对象
@@ -690,7 +726,7 @@
             //添加版本迁移方法用以兼容，否则使用版本2数据库的应用打开版本1的数据时会报错
             .addMigrations(Migration1to2())
             .build()
-    //5. 调用，查询语句
+    //5. 调用，直接调用UserDao中声明的方法
     val user : List<User> = db.userDao().getAll()
     ```
     

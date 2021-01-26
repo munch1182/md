@@ -69,6 +69,20 @@
         F --> |找不到| J(自己开发)
         F --> |找到| A
         ```
+
+        ```flow
+        startID=>start: 开始框
+        inputoutputID=>inputoutput: 输入输出框
+        operationID=>operation: 操作框
+        conditionID=>condition: 条件框
+        subroutineID=>subroutine: 子流程
+        endID=>end: 结束框
+
+        startID->inputoutputID->operationID->conditionID
+        conditionID(no)->subroutineID
+        conditionID(yes)->endID
+        ```
+        
     - 自带生成目录，需要书写时有结构
         ```
         <!-- @import "[TOC]" {cmd="toc" depthFrom=2 depthTo=3 orderedList=false} -->

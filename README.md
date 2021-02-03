@@ -9,6 +9,7 @@
 - [合并仓库与分支](#合并仓库与分支)
 - [创建新的空白分支](#创建新的空白分支)
 - [删除远程库的tag](#删除远程库的tag)
+- [删除远程库的提交记录](#删除远程库的提交记录)
 - [更改分支名](#更改分支名)
 
 <!-- /code_chunk_output -->
@@ -39,7 +40,7 @@
     `git reset --hard HEAD`
 - 撤销更改到指定版本(日志中操作后的一长串即版本号)
     `git reset --hard [versioncode]`
-- 查看日志
+- 查看日志(包括版本号)
     `git log`
 - 撤销指定文件的修改    
     `git chceckout HEAD [file]`
@@ -104,6 +105,14 @@
     `git tag -d [tag]`
 - 推送到远程库 
     `git push origin :[tag]`
+
+## 删除远程库的提交记录
+
+- 本地回退到相应版本，使用`--hard`替换`--soft`则不会保留自相应版本以来的更改记录
+    `git reset --soft [versioncode]`
+- 推送到远程库，并使用`--force`
+    `git push origin [branch] --force`
+
 
 ## 更改分支名 
 

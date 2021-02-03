@@ -108,10 +108,10 @@
 
 ## 删除远程库的提交记录
 
-- 本地回退到相应版本，使用`--hard`替换`--soft`则不会保留自相应版本以来的更改记录
+- 本地回退到相应版本，使用`--hard`替换`--soft`则不会保留自相应版本以来的更改记录    
     `git reset --soft [versioncode]`
-- 推送到远程库，并使用`--force`
-    `git push origin [branch] --force`
+- 推送到远程库，并使用`--force`     
+    `git push --force`
 
 
 ## 更改分支名 

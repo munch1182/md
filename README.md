@@ -30,6 +30,8 @@
     `git branch -r`
 - 查看当前状态
     `git status`
+- 删除本地分支  
+    `git branch -d [branch]`
 - 删除远程分支  
     `git push origin --delete [branch]`
 - 切换到本地分支并与远程分支连接    

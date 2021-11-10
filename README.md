@@ -12,6 +12,7 @@
 - [删除远程库的提交记录](#删除远程库的提交记录)
 - [更改提交记录](#更改提交记录)
 - [更改分支名](#更改分支名)
+- [将一个分支的提交应用到另一个分支](#将一个分支的提交应用到另一个分支)
 
 <!-- /code_chunk_output -->
 
@@ -146,3 +147,12 @@
         `git push origin [branch]`
     - 关联本地分支与远程分支    
         `git branch --set-upstream-to origin/[branch]`
+
+## 将一个分支的提交应用到另一个分支
+
+- 切换到代码更改的分支，查看提交的hash值
+    `git log -4` //查看最近4次提交
+- 切换到需要被应用的分支，合并提交
+    `git cherry-pick [hash]`或者`git cherry-pick [hash]..[hash]`//hash只需要前7位
+
+- 需要注意冲突的解决

@@ -8,10 +8,6 @@
 
 - [win下一些默认快捷键](#win下一些默认快捷键)
 - [Markdown](#markdown)
-- [Java](#java)
-- [Koltin](#koltin)
-- [Python](#python)
-- [Html](#html)
 
 <!-- /code_chunk_output -->
 
@@ -107,19 +103,3 @@
         | :---: | :--- | ---: | --- |
         | item1item1 | item2 | item3item3 | item4 |
         | item1 | item2item2 | item3 | item4item4 |
-
-## Java
-
-    - 插件：Java Extension Pack
-
-## Koltin 
-
-    - 插件：Kotlin-fwcd
-    - 插件：coderunner, 需要配置kotlinc运行环境
-
-## Python
-
-    - 插件：python
-    - 插件：coderunner, 需要配置python运行环境
-
-## Html

@@ -1,5 +1,0 @@
-# why
-
-- 为什么flow的catch对错误的拦截需要判断，导致如果传送的数据是pagingData这种带有flow的数据时，其数据的错误无法被catch捕获
-- flow通过transform时，外部线程切换无法控制源头的线程
-- PagingDataAdapter的refresh在第一次未成功submitData之后无法触发任何StateListener

@@ -16,8 +16,8 @@ MCMXCIV: 1994
 """
 
 
-### 未完成
 def romanFromInt(i: int) -> str:
+    # 应该使用方法而不是容器
     map = {1000: "M", 500: "D", 100: "C", 50: "L", 10: "X", 5: "V", 1: "I"}
     list = []
 
@@ -32,9 +32,12 @@ def romanFromInt(i: int) -> str:
         for n in map:
             if n == i2:
                 return map.get(n)
-            # 会有100-50=50的情形，导致50=LC而不等于L
             elif n > i2:
                 m = n - i2
+                # 用于过滤100-50=50，导致50=LC而不等于L的情形
+                # 应该使用数据的方法
+                if '1' not in str(m):
+                    continue
                 if m in map.keys():
                     return map.get(m) + map.get(n)
             else:
@@ -42,7 +45,6 @@ def romanFromInt(i: int) -> str:
     s = ""
     for i in list:
         s1 = queryStr(i)
-        print(s1)
         s += s1
     return s
 
@@ -66,11 +68,13 @@ if __name__ == "__main__":
     assert(romanToInt("IX") == 9)
 
     # print(romanFromInt(1994))
-    print(romanFromInt(58))
-    # print(romanFromInt(9))
-    # print(romanFromInt(6))
-    # print(romanFromInt(1591))
-    # print(romanFromInt(555))
+    print("58:"+romanFromInt(58))
+    print("9:"+romanFromInt(9))
+    print("6:"+romanFromInt(6))
+    print("1591:"+romanFromInt(1591))
+    print("555:"+romanFromInt(555))
+    print("1994:"+romanFromInt(1994))
+    print("50:"+romanFromInt(50))
     # assert(romanFromInt(1994) == "MCMXCIV")
     # assert(romanFromInt(58) == "LVIII")
     # assert(romanFromInt(9) == "IX")

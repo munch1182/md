@@ -8,12 +8,13 @@
 - [设置账号](#设置账号)
 - [合并仓库与分支](#合并仓库与分支)
 - [创建新的空白分支](#创建新的空白分支)
-- [删除远程库的tag](#删除远程库的tag)
 - [给之前的提交打tag](#给之前的提交打tag)
+- [删除远程库的tag](#删除远程库的tag)
 - [删除远程库的提交记录](#删除远程库的提交记录)
 - [更改提交记录](#更改提交记录)
 - [更改分支名](#更改分支名)
 - [将一个分支的提交应用到另一个分支](#将一个分支的提交应用到另一个分支)
+- [合并分支](#合并分支)
 
 <!-- /code_chunk_output -->
 
@@ -61,6 +62,8 @@
     `git commit -a -m "[message]"`
 - 拉取无关库代码，即两个库合并  
     `git pull origin master --allow-unrelated-histories`
+- 提交不产生新的commit, 推送时需要强制推送      
+    `git commit --amend --no-edit`
 
 ## 设置账号
 
@@ -159,3 +162,10 @@
     `git cherry-pick [hash]`或者`git cherry-pick [hash]..[hash]`//hash只需要前7位
 
 - 需要注意冲突的解决
+
+## 合并分支
+
+- 切换到要合并到的分支
+- 使用`merge`合并分支
+    `git merge [branch]` // 合并[branch]到当前分支      
+    `git merge --squash [branch] ` // 将[branch]分支转成当前分支的修改, 需要手动commit

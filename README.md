@@ -15,6 +15,7 @@
 - [更改分支名](#更改分支名)
 - [将一个分支的提交应用到另一个分支](#将一个分支的提交应用到另一个分支)
 - [合并分支](#合并分支)
+- [覆盖分支](#覆盖分支)
 
 <!-- /code_chunk_output -->
 
@@ -169,3 +170,10 @@
 - 使用`merge`合并分支
     `git merge [branch]` // 合并[branch]到当前分支      
     `git merge --squash [branch] ` // 将[branch]分支转成当前分支的修改, 需要手动commit
+
+## 覆盖分支
+
+- 在要被覆盖的分支上执行:
+    `git reset --hard origin/[branch]` // 将本地当前分支代码重置到目标分支的最新提交
+- 强制推送
+    `git push -f`
